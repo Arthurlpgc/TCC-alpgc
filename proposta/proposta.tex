@@ -66,7 +66,7 @@ Graduação em Engenharia da Computação
 
 \vfill
 
-{\huge \bfseries Estruturas de índices sucintas para grafos de subsequencias}
+{\huge \bfseries Índices flexíveis baseados em minimisers }
 \\
 \medskip
 {\bfseries\itshape Proposta de Trabalho de Graduação}
@@ -75,70 +75,58 @@ Graduação em Engenharia da Computação
 
 \bigskip
 
-	\begin{tabular}{r p{95mm}}
-	\textbf{Aluno: } & Vitor Travassos Castelo Branco\newline(\texttt{vtcb@cin.ufpe.br}) \\ 
+	\begin{tabular}{r p{100mm}}
+	\textbf{Aluno: } & Arthur Latache Pimentel Gesteira Costa \newline(\texttt{alpgc@cin.ufpe.br}) \\ 
 \textbf{Orientador: } & Paulo Gustavo Soares da Fonseca \newline(\texttt{paguso@cin.ufpe.br})
 \\
 	\textbf{Área: } & Teoria da Computação / Algoritmos
 \end{tabular}
 
 	\vspace{3cm}
-Recife, 04 de Abril de 2018
+Recife, Março de 2019
 \end{center}
 
 \clearpage 
 \thispagestyle{empty}
 \section{Resumo}
-Boa parte das ferramentas para o sequenciamento do DNA baseado nas plataformas de alto desempenho ditas de nova geração, especificamente as destinadas à montagem dos fragmentos sequenciados, utilizam estruturas de dados para grafos de subsequencias. Devido ao enorme volume de dados, um dos principais gargalos dessas representações é espaço em memória exigido. Várias representações compactas vêm sendo propostas nos últimos anos. Entretanto, existe uma relação inversa entre o espaço de memória e a eficiência/flexibilidade das operações suportadas. Mais recentemente, têm-se explorado a conexão entre os grafos de subsequencias e os índices de texto. Neste projeto, pretendemos produzir uma implementação dos Grafos de de Bruijn baseada numa representação sucinta da árvore de sufixos. Essa implementação será analisada e comparada a alternativas disponíveis na literatura para aferir a sua viabilidade em termos de espaço e tempo.
+
+
 
 \clearpage
 \setcounter{page}{1}
 \section{Introdução}
 
-%O DNA, molécula orgânica responsável pela codificação e transmissão das características ge\-né\-ti\-cas, é constituído por duas cadeias complementares formadas a partir de quatro \emph{bases nitrogenadas}, representadas por \A, \C, \G e \T. Cada \A de uma cadeia (fita) é emparelhado a um \T da outra, assim como cada \G é complementado por um \C, e vice versa. Essa estrutura molecular torna-o passível de representação por apenas uma sequência de letras no alfabeto dessas quatro letras. Desvendar o genoma de um organismo limita-se com identificar a sequência de caracteres correspondente ao seu DNA. 
+Um problema básico de processamento de texto, com aplicação em diversas áreas, consiste em procurar ocorrências aproximadas de uma cadeia, ou \emph{padrão}, $P$ num texto $T$ (ou coleção de textos $\mathcal{T}$) de muito maior tamanho. Por exemplo, em Biologia Computacional, costuma-se alinhar um determinado fragmento de sequência de DNA a um genoma ou conjunto de genomas de referência para identificar regiões homólogas em outras espécies. 
 
-Atualmente, o processo de sequenciamento de DNA é efetuado principalmente utilizando-se as plataformas de sequenciamento de alto desempenho ditas de ``nova geração'' (\textit{Next-Generation Sequencing---NGS}) \cite{Pop2008}. Essas tecnologias produzem um enorme volume de fragmentos curtos (comprimento abaixo das centenas) que precisam ser \emph{montados}, i.e., alinhados e combinados, para reconstruir sequências originais de bilhões de letras.
+Quando o texto é fixo, um \emph{índice} $I(T)$ é construído de forma a permitir que ocorrências de padrões sejam nele encontradas sem a necessidade de se percorrê-lo por completo. Um dos índices mais simples consiste numa tabela contendo ponteiros para as ocorrências no texto de subsequências de comprimento fixo $k$, ou \emph{kmers}. Para procurar $P$ em $T$, primeiro consultamos a tabela para descobrir as localizações de um kmer presente no padrão, chamado \emph{semente} (\emph{seed}), e logo confirmamos a ocorrência de $P$ em  $T$ nessas posições, estendendo o alinhamento original da semente pelos seus flancos. A essa estratégia dá-se o nome de \emph{seed and extend}. 
 
-As ferramentas para montagem de fragmentos NGS são majoritariamente baseadas nos chamados \emph{Grafos de de Bruijn} (GDB) \cite{Compeau2011}. No GDB de ordem $k$ construído a partir do conjunto de fragmentos $\ssS$, $G(\ssS)$, os nós correspondem às subsequencias de comprimento $k$ ($k$-mers) das cadeias em \ssS, e dois $k$-mers (nós) são unidos por uma aresta desde que haja uma sobreposição de tamanho $k-1$, de forma que as arestas correspondem aos $k+1$-mers de \ssS.  Efetuar a montagem de fragmentos usando GDB envolve problemas como o de encontrar \emph{Caminhos Eulerianos}, que admite solução em tempo polinomial. Entretanto, um dos principais limitadores quanto ao emprego dessas técnicas é o espaço de memória exigido pelos GDB que, se representado explicitamente, pode requerer centenas de GigaBytes \cite{Conway2011}. Diante disto, diversos esforços vêm sendo empreendidos para desenvolver estruturas de dados eficientes do ponto de vista de espaço, permitindo todavia operações sobre o GDB em tempo comparável a uma representação tradicional.
+Existe um compromisso entre o tamanho $k$ dos kmers indexados e o tamanho do índice, já que o número de diferentes kmers aumenta exponencialmente com $k$. Por outro lado, existe também uma relação entre $k$ e a sensibilidade e especificidade do índice. Um $k$ pequeno implica numa menor quantidade de kmers indexados, mas cada um deles terá uma maior quantidade de ocorrências, o que poderá tornar o índice muito sensível porém pouco específico, com repercussão negativa sobre o tempo da busca. Já um valor demasiado grande para $k$ implica em menos kmers indexados, mas o índice pode tornar-se pouco sensível e muito específico, levando à não-detecção de ocorrências aproximadas significativas. Escolher o valor adequado para $k$ de forma a equilibrar o tamanho do índice, sua relação entre sensibilidade e especificidade, além do tempo da busca, constitui-se portanto num importante problema.
 
-%\begin{figure}
-%	\begin{center}
-%	\includegraphics{dbg}
-%	\end{center}
-%	\caption{GDB de ordem $k=3$ da cadeia $S=\str{TACGACGTCGACT}$. Os nós são rotulados pelos 3-mers (em preto) e temos uma aresta dirigida $x_0x_1x_2\stackrel{y_2}\longrightarrow y_0y_1y_2$ sempre que $x_1x_2=y_0y_1$. Ocorre que, no sequenciamento de DNA, normalmente não sabemos se foi lida a sequência de uma fita ou da sua complementar, no sentido oposto. Portanto, o 4-mer $x_0x_1x_2x_3$ tanto pode representar a aresta $x_0x_1x_2\stackrel{x_3}\longrightarrow x_1x_2x_3$ como a aresta $x'_3x'_2x'_1\stackrel{x'_0}\longrightarrow x'_2x'_1x'_0$ ($x'j$ denota a base complementar de $x_j$). Por essa razão é comum identificar o nó ($k$-mer) com seu complemento reverso (em cinza) e considerar o grafo como bidirecional.}  \label{fig:dbg}
-%\end{figure}
+\subsection{Minimisers}
 
-A representação e manipulação de GDB envolve técnicas algorítmicas específicas que visam a minimisar o uso de memória principal. Essas técnicas incluem o desenho de algoritmos otimizados para memória externa/cache, o desenvolvimento de \emph{estruturas de dados sucintas} \cite{Jacobson1989}, e o uso de compressão de dados.
-Os métodos  descritos na literatura procuram representar ou o conjunto de vértices ($k$-mers) ou arestas ($K+1$-mers) com estruturas de dados específicas de forma a permitir que as operações de navegação como `quais são os sucessores/predecessores de um nó $v$?' sejam respondidas indiretamente através de operações primitivas de baixo nível. 
+Considere um texto $T=t_0\cdots t_{n-1}$ de comprimento $n$ e denotemos por $T[i:j]=t_i\cdots t_{j-1}$ a subcadeia de comprimento $j-i$. Uma subcadeia de comprimento $w+k-1$ corresponde a uma janela de $w$\/ kmers consecutivos. Considerando uma relação de ordem qualquer sobre o conjunto dos kmers (por exemplo, a ordem lexicográfica), chamamos o kmer mínimo dessa janela do seu $(w,k)$-\textit{minimiser}, ou simplesmente minimiser quando os valores dos parâmetros $w$ e $k$ estiverem subentendidos.
 
-Num dos primeiros esforços, Conway e Bromage \cite{Conway2011} propuseram-se a representar $G(\ssS)$ a partir do seu conjunto de arestas $E$ como um conjunto de $k+1$-mers ordenados lexicograficamente. Cada uma das possíveis arestas pode ser identificada com uma posição de um bit array comprimido  \cite{Okanohara2007}. 
-Operações de navegação como são realizadas através de consultas ao bit array.
-Os autores obtiveram assim cerca de 28 bits por aresta para o GDB do genoma de um humano.
+\begin{figure}[htpb]
+	\centering
+	%\includegraphics[width=0.8\linewidth]{name.ext}
+	\caption{Minimiser}
+	\label{fig:name}
+\end{figure}
 
+\cite{} e \cite{} propuseram a utilização dos minimisers para construção de índices de tamanho reduzido. A ideia básica é a seguinte. Primeiro, desliza-se uma janela de $w$ kmers consecutivos (ou seja, uma janela de comprimento $w+k-1$) por $T$ e, para cada uma delas, armazenamos o seu minimiser junto com as suas ocorrências numa tabela. Posteriormente, para procura por $P$, desliza-se da mesma forma uma janela de mesmo tamanho sobre o padrão e, em cada uma delas, utiliza-se o minimiser como semente. Com efeito, se $P$ e $T$ compartilharem uma mesma subsequência de comprimento $\geq w+k-1$, então elas terão o mesmo minimiser e esse deverá ser encontrado na tabela. Em outras palavras, toda ocorrência do padrão com alinhamento exato de uma subsequência de comprimento mínimo de $w+k-1$ será identificada. Portanto, esse valor controla a relação entre sensibilidade e especificidade do índice.
 
-Pell et al \cite{Pell2012} propuseram uma representação mais econômica que consiste em armazenar o conjunto dos vértices $V$ ($k$-mers) de  $G(\ssS)$ num \emph{Filtro de Bloom (FB)} \cite{Bloom1970}.
-Apesar de consultas ao FB poderem retornar falsos-positivos, Pell et al sustentam que a representação mantém propriedades 
-adequadas para tarefas como a decomposição do GDB em componentes para a posterior montagem de trechos contíguos (\emph{contigs}) da sequência original.   
-Chikhi e Rizk \cite{Chikhi2013} estenderam a representação de Pell ara representar explicitamente um conjunto de \emph{falsos-positivos críticos} (FPc). Com isso, obteve-se uma representação exata que permitiu que o GDB do genoma humano (HapMap: NA18507) fosse armazenado em cerca de 6~GigaBytes. Posteriormente, essa estrutura foi refinada por Salikhov et al \cite{Salikhov2014} com a utilização em cascata de FB para representar o conjunto de FPc (ao invés de hash tables), obtendo uma representação cerca de 30--40\% mais eficiente em termos de memória, e 18--30\% em termos de tempo de percurso do GDB.
+\cite{} e \cite{} também demonstraram que, sob hipótese de equiprobabilidade e independência de escolha de cada kmer da janela como sendo o minimiser, na média um novo minimiser é escolhido a cada $(w+1)/2$ deslocamentos sucessivos da janela. Assim, o parâmetro $w$ controla a taxa de amostragem dos kmers indexados e logo influencia o tamanho do índice. Segue que, como referido acima, a eficiência e eficácia do índice dependem da criteriosa escolha dos valores de $w$ e $k$.
 
-A representação apresentada por Bowe et al \cite{Bowe2012} foi inspirada pela \emph{Transformada de Burrows-Wheeler} (BWT) \cite{Burrows1994}. 
-A BWT é uma permutação de um texto que permite a compressão e a busca eficiente por padrões sobre ele. Bowe et al propuseram representar o GDB de uma cadeia $S$ de comprimento $n$ como uma permutação $W$ similar à sua BWT. Essa cadeia, juntamente com um bit array de tamanho $n$ e mais as contagens de cada caractere em $S$, permitem a navegação sobre o GDB. No total, essa representação do GDB requer cerca de 2.5~GigaBytes para o mesmo data set do genoma humano (HapMap: NA18507) mencionado acima.
-Boucher et al \cite{Boucher2015} estenderam a representação de \cite{Bowe2012} para permitir operações de navegação com o $k$ variável e escolhido \emph{on-the-fly}. Belazzougui et al \cite{Belazzougui2016} refinaram ainda mais a re\-pre\-sen\-ta\-ção de \cite{Boucher2015}, introduzindo, uma estrutura bidirecional \cite{Schnattinger2012}. Essa modificação tem um custo acrescido de $O(n\lg k)$ bits de espaço ($n=$número de vértices) sobre a representação base de \cite{Bowe2012}, permitindo todavia navegar sobre o GDB nos dois sentidos e com $k$ variável em tempo $O(\lg k)$ por aresta. 
+Ocorre que, em algumas aplicações, uma escolha ótima dos parâmetros $w$ e $k$ pode ser muito desafiadora, senão praticamente impossível. Em aplicações de Biologia Computacional, por exemplo, muitas vezes as sequências a serem mapeadas (os padrões) apresentam características bastante variáveis quanto ao comprimento, composição e taxa de erro, por exemplo. Da mesma forma, algumas regiões do genoma têm maior ou menor complexidade, como por exemplo regiões com longos homopolímeros (sequências de uma mesma letra), ou  regiões enriquecidas em pequenas repetições. Dependendo da combinação das características dos padrões e/ou regiões do texto, pode ser necessário utilizar valores diferentes para $w$ e $k$. Na prática, isso muitas vezes implica em rodar uma ferramenta de mapeamento diversas vezes, com diferentes parametrizações.
 
-Outras propostas de representação são baseadas \emph{FM-index} \cite{Ferragina2000}, que é uma extensão sucinta da BWT. R{\o}dland \cite{Rodland2013} propôs uma variação do FM-index, chamado $k$FM-index, para representar diretamente o conjunto de $k+1$-mers (arestas) de um conjunto de sequências em ordem lexicográfica. Essa representação requer cerca de 5 bits por nó, o que é suficiente para permitir a navegação no GDB no sentido reverso das arestas.
-Chikhi et al \cite{Chikhi2015} também propuseram uma representação chamada DBGFM que consiste em representar através de um FM-index a cadeia correspondente à concatenação dos rótulos das arestas de todos os \emph{caminhos simples maximais} (i.e. contendo apenas nós sem bifurcação) de $G(\ssS)$. A implementação de \cite{Chikhi2015} usa ainda a codificação de Huffman para comprimir a BWT, demandando apenas $\approx 1.5$~GigaBytes para o data set NA18507 do genoma humano referido anteriormente. 
-
-Embora os métodos anteriores já evidenciem a relação entre os GDB e as estruturas de índice, Cazaux et al \cite{Cazaux2016} propuseram-se a investigar mais aprofundadamente essa conexão, em particular com as árvores de sufixos, que é um índice de referência muito estudado \cite{Apostolico1985}. Nesse estudo teórico, os autores apresentaram algoritmos lineares para a construção de GDB a partir de árvores de sufixos, árvores de sufixos truncadas \cite{Na2003}, e arrays de sufixos \cite{Manber1993}. Essa estratégia pode tirar proveito da construção prévia de um desses índices para uma outra tarefa, como a correção de erros de sequenciamento, por exemplo.
 
 
 \clearpage
 \section{Objetivos}
 
-Conforme visto acima, o tema deste projeto é um tópico ativo de pesquisa com muitas contribuições recentes. Apesar da literatura relativamente extensa, os desenvolvimentos ainda não estão consolidados. Em particular, observa-se uma grande disparidade metodológica nas abordagens, com diversas estruturas sendo adotadas. Essas estruturas refletem as necessidades e objetivos particulares dos estudos e das ferramentas para as quais foram desenvolvidas, e implementam portanto um conjunto não-uniforme de funcionalidades. Além disso, as estruturas apresentam níveis muito distintos de maturidade, algumas delas já bem integradas em ferramentas mais estáveis e.g.  \cite{Chikhi2013, Salikhov2014}, outras ainda em fase de protótipo, e.g. \cite{Bowe2012, Rodland2013}, e outras para as quais não conhecemos implementações, e.g.\cite{Cazaux2016}.
 
-O principal objetivo deste projeto é explorar a conexão teórica entre os GDB e as estruturas de índices, e sua realização prática. Em particular, o recente trabalho de Cazaux et al \cite{Cazaux2016} aponta para as conexões entre as árvores de sufixos e os GDB. Neste trabalho iremos desenvolver uma implementação sucinta baseada em Árvores de Sufixos Comprimidas \cite{Sadakane2007}. Esta implementação será avaliada do ponto de vista teórico e prático quanto ao (i)~tempo e memória de construção da estrutura, (ii)~espaço de memória final da estrutura, (iii)~tempo das operações de navegação através da simulação de percursos no grafo. Os resultados serão comparados a outras implementações mencionadas acima.
 
-%Todavia, a estrutura proposta é assimétrica, no sentido discutido em \cite{Belazzougui2016}, pelo que um um outro objetivo específico que podemos apontar seria estender essa conexão para estruturas bidirecionais como as árvores e/ou arrays de afixos \cite{Maass2003, Strothmann2007}. Além disso, como mencionado acima, \cite{Cazaux2016} contém um estudo teórico sobre os algoritmos para a conversão de árvores e arrays de sufixos em GDB. Também temos como objetivo investigar as implementações eficientes para os GDB assim obtidos, tendo por base representações sucintas para as árvores de sufixos \cite{Sadakane2007}.
+
 
 O software desenvolvido no projeto será acrescentado a uma biblioteca básica em escrita em C, atualmente em desenvolvimento, para que possa ser útil à comunidade de processamento de texto e Biologia Computacional.
 
@@ -226,11 +214,11 @@ O aluno já possui alguma familiaridade com a área, tendo inclusive cursado uma
 
 \vfill
 \begin{center}
-	Recife, 04 de Abril de 2018
+	Recife, 22 de Março de 2019
 
 	\vspace{3cm}
 	\rule{10cm}{.5pt}\\
-	\textbf{Aluno:} Vitor Travassos Castelo Branco\\
+	\textbf{Aluno:} Arthur Latache Pimentel Gesteira Costa\\
 
 	\vspace{3cm}
 	\rule{10cm}{.5pt}\\
