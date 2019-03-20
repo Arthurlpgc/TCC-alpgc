@@ -98,37 +98,59 @@ Recife, Março de 2019
 
 Um problema básico de processamento de texto, com aplicação em diversas áreas, consiste em procurar ocorrências aproximadas de uma cadeia, ou \emph{padrão}, $P$ num texto $T$ (ou coleção de textos $\mathcal{T}$) de muito maior tamanho. Por exemplo, em Biologia Computacional, costuma-se alinhar um determinado fragmento de sequência de DNA a um genoma ou conjunto de genomas de referência para identificar regiões homólogas em outras espécies. 
 
-Quando o texto é fixo, um \emph{índice} $I(T)$ é construído de forma a permitir que ocorrências de padrões sejam nele encontradas sem a necessidade de se percorrê-lo por completo. Um dos índices mais simples consiste numa tabela contendo ponteiros para as ocorrências no texto de subsequências de comprimento fixo $k$, ou \emph{kmers}. Para procurar $P$ em $T$, primeiro consultamos a tabela para descobrir as localizações de um kmer presente no padrão, chamado \emph{semente} (\emph{seed}), e logo confirmamos a ocorrência de $P$ em  $T$ nessas posições, estendendo o alinhamento original da semente pelos seus flancos. A essa estratégia dá-se o nome de \emph{seed and extend}. 
+Quando o texto é fixo, um \emph{índice} $I(T)$ é construído de forma a permitir que ocorrências de padrões sejam nele encontradas sem a necessidade de se percorrê-lo por completo. Um dos índices mais simples consiste numa tabela contendo ponteiros para as ocorrências no texto de subsequências de comprimento fixo $k$, ou \emph{kmers}. Para procurar $P$ em $T$, primeiro consultamos a tabela para descobrir as localizações no texto de um kmer presente no padrão, chamado \emph{semente} (\emph{seed}), e logo confirmamos a ocorrência de $P$ em cada uma dessas posições, estendendo o alinhamento original da semente pelos flancos. A essa estratégia dá-se o nome de \emph{seed and extend}. 
 
 Existe um compromisso entre o tamanho $k$ dos kmers indexados e o tamanho do índice, já que o número de diferentes kmers aumenta exponencialmente com $k$. Por outro lado, existe também uma relação entre $k$ e a sensibilidade e especificidade do índice. Um $k$ pequeno implica numa menor quantidade de kmers indexados, mas cada um deles terá uma maior quantidade de ocorrências, o que poderá tornar o índice muito sensível porém pouco específico, com repercussão negativa sobre o tempo da busca. Já um valor demasiado grande para $k$ implica em menos kmers indexados, mas o índice pode tornar-se pouco sensível e muito específico, levando à não-detecção de ocorrências aproximadas significativas. Escolher o valor adequado para $k$ de forma a equilibrar o tamanho do índice, sua relação entre sensibilidade e especificidade, além do tempo da busca, constitui-se portanto num importante problema.
 
-\subsection{Minimisers}
+\subsection*{Minimisers}
 
-Considere um texto $T=t_0\cdots t_{n-1}$ de comprimento $n$ e denotemos por $T[i:j]=t_i\cdots t_{j-1}$ a subcadeia de comprimento $j-i$. Uma subcadeia de comprimento $w+k-1$ corresponde a uma janela de $w$\/ kmers consecutivos. Considerando uma relação de ordem qualquer sobre o conjunto dos kmers (por exemplo, a ordem lexicográfica), chamamos o kmer mínimo dessa janela do seu $(w,k)$-\textit{minimiser}, ou simplesmente minimiser quando os valores dos parâmetros $w$ e $k$ estiverem subentendidos.
+Considere um texto $T=t_0\cdots t_{n-1}$ de comprimento $n$ e denotemos por $T[i:j]=t_i\cdots t_{j-1}$ a subcadeia de comprimento $j-i$\/ iniciada na posição $i$. Uma tal subcadeia de comprimento $w+k-1$ corresponde a uma janela de $w$\/ kmers consecutivos. Considerando uma relação de ordem qualquer sobre o conjunto dos kmers (por exemplo, a ordem lexicográfica), chamamos o kmer mínimo dessa janela do seu $(w,k)$-\textit{minimiser}, ou simplesmente minimiser quando os valores dos parâmetros $w$ e $k$ estiverem subentendidos. A Figura~\ref{fig:minimiser} ilustra esse conceito.
 
 \begin{figure}[htpb]
 	\centering
 	%\includegraphics[width=0.8\linewidth]{name.ext}
-	\caption{Minimiser}
-	\label{fig:name}
+
+	\begin{verbatim}
+                                Janela
+                           |<-- (w+k-1) -->|  
+        Texto T: ... ACGTAGCATGATCGATCGATCGAGCTTAGCTAGCTAGCAT ...
+                               *   *	
+kmers na janela:           CATGATC
+                            ATGATCG
+                             TGATCGA
+                              GATCGAT
+                               ATCGATC  <------+-- (11,7)-minimiser 
+                                TCGATCG        |
+                                 CGATCGA       |
+                                  GATCGAT      |
+                                   ATCGATC  <--+
+                                    TCGATCG
+                                     CGATCGA
+	\end{verbatim}
+	\caption{Exemplo de minimiser para $w=11$ e $k=7$ baseado na ordem lexicográfica. As posições onde o minimiser ocorre no texto são indicadas por $*$. Repare que o minimiser pode ocorrer mais de uma vez na janela, inclusive com sobreposição.}
+	\label{fig:minimiser}
 \end{figure}
 
-\cite{} e \cite{} propuseram a utilização dos minimisers para construção de índices de tamanho reduzido. A ideia básica é a seguinte. Primeiro, desliza-se uma janela de $w$ kmers consecutivos (ou seja, uma janela de comprimento $w+k-1$) por $T$ e, para cada uma delas, armazenamos o seu minimiser junto com as suas ocorrências numa tabela. Posteriormente, para procura por $P$, desliza-se da mesma forma uma janela de mesmo tamanho sobre o padrão e, em cada uma delas, utiliza-se o minimiser como semente. Com efeito, se $P$ e $T$ compartilharem uma mesma subsequência de comprimento $\geq w+k-1$, então elas terão o mesmo minimiser e esse deverá ser encontrado na tabela. Em outras palavras, toda ocorrência do padrão com alinhamento exato de uma subsequência de comprimento mínimo de $w+k-1$ será identificada. Portanto, esse valor controla a relação entre sensibilidade e especificidade do índice.
+Schleimer et al \cite{Schleimer2003} e, independentemente, Roberts et al \cite{Roberts2004} propuseram a utilização dos minimisers para construção de índices de tamanho reduzido. A ideia básica é a seguinte. Primeiro, desliza-se uma janela de $w$ kmers consecutivos (ou seja, uma janela de comprimento $w+k-1$) por $T$ e, para cada uma delas, armazenamos o seu minimiser junto com as suas ocorrências numa tabela. Posteriormente, para procura por $P$, desliza-se da mesma forma uma janela de mesmo tamanho sobre o padrão e, em cada uma delas, utiliza-se o minimiser como semente. Com efeito, se $P$ e $T$ compartilharem uma mesma subsequência de comprimento $\geq w+k-1$, então elas terão o mesmo minimiser e este deverá ser encontrado na tabela. Em outras palavras, toda ocorrência do padrão com alinhamento exato de uma subsequência de comprimento mínimo $w+k-1$ será identificada. Portanto, esse valor controla a relação entre sensibilidade e especificidade do índice.
 
-\cite{} e \cite{} também demonstraram que, sob hipótese de equiprobabilidade e independência de escolha de cada kmer da janela como sendo o minimiser, na média um novo minimiser é escolhido a cada $(w+1)/2$ deslocamentos sucessivos da janela. Assim, o parâmetro $w$ controla a taxa de amostragem dos kmers indexados e logo influencia o tamanho do índice. Segue que, como referido acima, a eficiência e eficácia do índice dependem da criteriosa escolha dos valores de $w$ e $k$.
+Nos trabalhos seminais \cite{Schleimer2003, Roberts2004} também foi demonstrado que, sob hipótese de equiprobabilidade e independência de escolha de cada kmer da janela como sendo o minimiser, na média um novo minimiser é escolhido a cada $(w+1)/2$ deslocamentos sucessivos da janela. Assim, o parâmetro $w$ controla a taxa de amostragem dos kmers indexados e logo influencia o tamanho do índice. Segue-se, como referido acima, que a eficiência e eficácia do índice dependem da criteriosa escolha dos valores de $w$ e $k$.
 
-Ocorre que, em algumas aplicações, uma escolha ótima dos parâmetros $w$ e $k$ pode ser muito desafiadora, senão praticamente impossível. Em aplicações de Biologia Computacional, por exemplo, muitas vezes as sequências a serem mapeadas (os padrões) apresentam características bastante variáveis quanto ao comprimento, composição e taxa de erro, por exemplo. Da mesma forma, algumas regiões do genoma têm maior ou menor complexidade, como por exemplo regiões com longos homopolímeros (sequências de uma mesma letra), ou  regiões enriquecidas em pequenas repetições. Dependendo da combinação das características dos padrões e/ou regiões do texto, pode ser necessário utilizar valores diferentes para $w$ e $k$. Na prática, isso muitas vezes implica em rodar uma ferramenta de mapeamento diversas vezes, com diferentes parametrizações.
+Ocorre que, em algumas situações, a escolha ótima dos parâmetros $w$ e $k$ pode ser muito desafiadora, senão praticamente impossível. Em aplicações de Biologia Computacional, por exemplo, muitas vezes as sequências a serem mapeadas (os padrões) apresentam características bastante variáveis quanto ao comprimento, composição e taxa de erro. Da mesma forma, algumas regiões do genoma têm maior ou menor complexidade, como regiões com longos homopolímeros (sequências de uma mesma letra), ou  regiões enriquecidas de pequenas repetições. Dependendo da combinação das características dos padrões e/ou regiões do texto, pode ser necessário utilizar valores diferentes para $w$ e $k$. Na prática, isso muitas vezes implica em rodar uma ferramenta de mapeamento diversas vezes, com diferentes parametrizações.
 
 
 
 \clearpage
 \section{Objetivos}
 
+Este projeto tem por objetivo geral estudar o desempenho de índices baseados em minimisers para o mapeamento aproximado de cadeias, em particular para aplicações de Biologia Computacional. Especificamente, serão analisados  os efeitos da escolha dos parâmetros $w$ e $k$ sobre os seguintes critérios de eficiência do índice
+\begin{description}
+\item[C1] O tamanho (espaço em memória) do índice
+\item[C2] A relação entre sensibilidade e especificidade na busca aproximada por \emph{seed and extend}
+\item[C3] O tempo da busa.
+\end{description}
+Como principais resultados, objetivamos obter estruturas de dados para a representação do índice visando a economia de memória (C1), aliadas a heurísticas de busca eficientes (C3) com uma boa relação entre sensibilidade e especificidade (C2). Um possível resultado original seria a obtenção de um índice capaz de representar eficientemente minimisers com valores variáveis de $w$ e $k$ que possam ser flexibilizados durante a busca, sem a necessidade de reprocessamento das tabelas.
 
-
-
-
-O software desenvolvido no projeto será acrescentado a uma biblioteca básica em escrita em C, atualmente em desenvolvimento, para que possa ser útil à comunidade de processamento de texto e Biologia Computacional.
+As estruturas e algoritmos propostos serão implementados e o  software desenvolvido no projeto será acrescentado a uma biblioteca básica em escrita em C, atualmente em desenvolvimento, para que possa ser útil à comunidade de processamento de texto e Biologia Computacional.
 
 
 \clearpage
@@ -136,39 +158,38 @@ O software desenvolvido no projeto será acrescentado a uma biblioteca básica e
 
 O projeto será organizado nas atividades descritas abaixo e desenvolvidas conforme o cronograma a seguir.
 
-\subsection{T0. Preparação da proposta}
+\subsection*{T0. Preparação da proposta}
 
 Nesta fase inicial, aluno e orientador farão uma série de reuniões para definição do problema e escopo do projeto. O orientador apresentará a bibliografia básica sobre o tema e os possíveis pontos a serem abordados, e ambos decidirão sobre aqueles a serem desenvolvidos com base no  interesse mútuo.
 
-\subsection{T1. Revisão e acompanhamento bibliográfico}
+\subsection*{T1. Revisão e acompanhamento bibliográfico}
 
 Essa tarefa será executada de maneira mais acentuada no início do projeto. A atividade consiste num estudo dirigido centrado no  material bibliográfico mais diretamente relacionado às estruturas de dados e algoritmos a serem implementados no projeto. Ao final dessa fase inicial, espera-se que o aluno possa manter-se atualizado e aprofundar-se em pontos específicos de maneira mais autônoma.
 
 
-\subsection{T2. Implementação das estruturas}
+\subsection*{T2. Implementação dos algoritmo e estruturas}
 
 Esta tarefa corresponde à principal componente de desenvolvimento do projeto. O aluno deverá, em interação com o orientador, estudar detalhadamente algoritmos e estruturas de dados relativos aos índices e grafos de subsequências, e desenvolver uma implementação de referência em nível de produção para os mesmos, com base em uma biblioteca em C atualmente em desenvolvimento.
 
 
-\subsection{T3. Realização dos Testes}
+\subsection*{T3. Realização de testes e experimentos}
 
 Nesta tarefa, o aluno deverá fazer uma análise experimental comparativa do desempenho dos métodos propostos e implementados relativamente a outras alternativas públicas identificadas num levantamento inicial na tarefa T1. Pode ser necessário obter dados reais e produzir dados sintéticos que simulem uma situação limite de estresse para os métodos.
 
 
-\subsection{T4. Redação e revisão da monografia}
+\subsection*{T4. Redação e revisão da monografia}
 
 A monografia produzida deverá conter:
 (1)~uma breve revisão bibliográfica do estado da arte, fruto da tarefa T1, (2)~descrição detalhada dos seus desenvolvimentos, incluindo a análise teórica dos algoritmos e estruturas propostas em termos de tempo e espaço, (3)~uma análise crítica com base em resultados experimentais da tarefa T3, e (4)~uma discussão com conclusões gerais sobre o projeto.
 
 
-\subsection{T5. Preparação da Apresentação}
+\subsection*{T5. Preparação da Apresentação}
 
 Finalmente, o aluno preparará a apresentação da defesa do TG com o resumo dos desenvolvimentos e resultados obtidos.
 
 \medskip
 
 O aluno já possui alguma familiaridade com a área, tendo inclusive cursado uma disciplina eletiva oferecida pelo orientador, pelo que poderá por-se rapidamente em desenvolvimento. O acompanhamento será feito pessoalmente através de reuniões semanais. Todo material desenvolvido é compartilhado entre orientador e aluno através de um repositório privado na plataforma GitHub. 
-
 
 \clearpage
 \section{Cronograma de atividades}
@@ -186,9 +207,9 @@ O aluno já possui alguma familiaridade com a área, tendo inclusive cursado uma
 		Preparação da apresentação & & & & & & & & & & & & & & & \X & \X \\\hline 
 \hline
 	\end{tabular}
-\begin{minipage}{0.6\linewidth}
+\begin{minipage}{0.9\linewidth}
 \noindent($\dagger$) \X = levantamento inicial, \x= aprofundamento\newline
-\noindent($\ddagger$) \X= experimentos formais , \x = testes \textit{ad hoc} unitários\newline
+\noindent($\ddagger$) \X= experimentos finais , \x = testes preliminares para orientar desenvolvimento\newline
 \end{minipage}
 
 \end{center}
@@ -204,8 +225,8 @@ O aluno já possui alguma familiaridade com a área, tendo inclusive cursado uma
 \section{Possíveis Avaliadores}
 
 \begin{enumerate}
-\item Profa. Katia  Guimarães
-\item Prof. Pedro Manhães
+\item Prof. Nivan Ferreira Jr 
+\item Prof. Gustavo Carvalho 
 \end{enumerate}
 
 
