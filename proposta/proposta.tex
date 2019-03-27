@@ -66,7 +66,7 @@ Graduação em Engenharia da Computação
 
 \vfill
 
-{\huge \bfseries Índices flexíveis baseados em minimisers }
+{\huge \bfseries Índices flexíveis baseados em minimisers para busca aproximada de padrões em textos volumosos}
 \\
 \medskip
 {\bfseries\itshape Proposta de Trabalho de Graduação}
@@ -89,6 +89,9 @@ Recife, Março de 2019
 \clearpage 
 \thispagestyle{empty}
 \section{Resumo}
+
+Um problema algorítmico básico consiste em procurar ocorrências aproximadas de um \emph{padrão} $P$ num \emph{texto} $T$ (ou coleção de textos) de muito maior tamanho. Quando o texto é fixo, um \emph{índice} $I(T)$ é construído de forma a permitir que ocorrências de padrões sejam nele encontradas sem a necessidade de se percorrê-lo por completo. 
+Diversos índices foram propostos na literatura, com relações diversas entre espaço de memória e tempo de busca. Em aplicações com grandes volumes de dados, como em Biologia Computacional, índices completos tradicionais como árvores de sufixos ou vetores de sufixos, que representam todas as subcadeias do texto, podem requerer um espaço proibitivo. Alternativamente, alguns índices parciais recentemente propostos representam apenas um subconjunto de subcadeias de tamanho fixo $k$, chamados \emph{minimisers}. Esses índices são combinados a heurísticas de busca que permitem localizar ocorrências aproximadas de um padrão a partir de extensões de ocorrências exatas de subcadeias de tamanho fixo. Em geral, temos como características conflitantes o tamanho do índice, sua relação entre sensibilidade e especificidade, e o tempo da busca. Esses fatores são diretamente influenciados pela escolha de quais, quantos e de que tamanho serão os minimisers indexados, e de como serão combinados para a busca. O objetivo deste trabalho é estudar a relação entre esses fatores e propor algoritmos e estruturas de dados que permitam uma parametrização flexível para uma busca eficiente e com espaço reduzido. 
 
 
 
@@ -131,7 +134,7 @@ kmers na janela:           CATGATC
 	\label{fig:minimiser}
 \end{figure}
 
-Schleimer et al \cite{Schleimer2003} e, independentemente, Roberts et al \cite{Roberts2004} propuseram a utilização dos minimisers para construção de índices de tamanho reduzido. A ideia básica é a seguinte. Primeiro, desliza-se uma janela de $w$ kmers consecutivos (ou seja, uma janela de comprimento $w+k-1$) por $T$ e, para cada uma delas, armazenamos o seu minimiser junto com as suas ocorrências numa tabela. Posteriormente, para procura por $P$, desliza-se da mesma forma uma janela de mesmo tamanho sobre o padrão e, em cada uma delas, utiliza-se o minimiser como semente. Com efeito, se $P$ e $T$ compartilharem uma mesma subsequência de comprimento $\geq w+k-1$, então elas terão o mesmo minimiser e este deverá ser encontrado na tabela. Em outras palavras, toda ocorrência do padrão com alinhamento exato de uma subsequência de comprimento mínimo $w+k-1$ será identificada. Portanto, esse valor controla a relação entre sensibilidade e especificidade do índice.
+Schleimer et al \cite{Schleimer2003} e, independentemente, Roberts et al \cite{Roberts2004} propuseram a utilização dos minimisers para construção de índices de tamanho reduzido. A ideia básica é a seguinte. Primeiro, desliza-se uma janela de $w$ kmers consecutivos (ou seja, uma janela de comprimento $w+k-1$) por $T$ e, para cada uma delas, armazenamos o seu minimiser junto com as suas ocorrências numa tabela. Posteriormente, para procurar por $P$, desliza-se igualmente uma janela de mesmo tamanho sobre o padrão e, em cada posição, utiliza-se o minimiser da janela como semente. Com efeito, se $P$ e $T$ compartilharem uma mesma subsequência de comprimento $\geq w+k-1$, então o minimiser dessa subsequência deverá ser encontrado na tabela. Em outras palavras, toda ocorrência do padrão com alinhamento exato de uma subsequência de comprimento mínimo $w+k-1$ será identificada. Portanto, esse valor controla a relação entre sensibilidade e especificidade do índice.
 
 Nos trabalhos seminais \cite{Schleimer2003, Roberts2004} também foi demonstrado que, sob hipótese de equiprobabilidade e independência de escolha de cada kmer da janela como sendo o minimiser, na média um novo minimiser é escolhido a cada $(w+1)/2$ deslocamentos sucessivos da janela. Assim, o parâmetro $w$ controla a taxa de amostragem dos kmers indexados e logo influencia o tamanho do índice. Segue-se, como referido acima, que a eficiência e eficácia do índice dependem da criteriosa escolha dos valores de $w$ e $k$.
 
@@ -146,9 +149,9 @@ Este projeto tem por objetivo geral estudar o desempenho de índices baseados em
 \begin{description}
 \item[C1] O tamanho (espaço em memória) do índice
 \item[C2] A relação entre sensibilidade e especificidade na busca aproximada por \emph{seed and extend}
-\item[C3] O tempo da busa.
+\item[C3] O tempo da busca.
 \end{description}
-Como principais resultados, objetivamos obter estruturas de dados para a representação do índice visando a economia de memória (C1), aliadas a heurísticas de busca eficientes (C3) com uma boa relação entre sensibilidade e especificidade (C2). Um possível resultado original seria a obtenção de um índice capaz de representar eficientemente minimisers com valores variáveis de $w$ e $k$ que possam ser flexibilizados durante a busca, sem a necessidade de reprocessamento das tabelas.
+Como principais resultados, objetivamos obter estruturas de dados para a representação do índice visando a economia de memória (C1), aliadas a heurísticas de busca eficientes (C3) com uma boa relação entre sensibilidade e especificidade (C2). Um possível resultado original seria a obtenção de um índice capaz de representar eficientemente minimisers com valores variáveis de $w$ e $k$, valores esses que possam ser flexibilizados durante a busca sem a necessidade de reprocessamento das tabelas.
 
 As estruturas e algoritmos propostos serão implementados e o  software desenvolvido no projeto será acrescentado a uma biblioteca básica em escrita em C, atualmente em desenvolvimento, para que possa ser útil à comunidade de processamento de texto e Biologia Computacional.
 
