@@ -1,3 +1,4 @@
+from sarray import Sarray
 class minimizer:
   def __init__(self, pat, k_max, get_mnm):
     self.k_max = k_max
@@ -36,8 +37,15 @@ def comp(x, y, pat):
   else:
     return y
     
+def comp2(x, y, inv_sarray):
+  if inv_sarray[x] < inv_sarray[y]:
+    return x
+  else:
+    return y
+
 patt = "abacabadabacaba"
-mmn = minimizer(patt, 3, lambda x, y: comp(x,y,patt))
+srr = Sarray(patt)
+mmn = minimizer(patt, 3, lambda x, y: comp2(x,y,srr.rank))
 while True:
   [k, w, pos] = list(map(lambda x:eval(x), input().split(' ')))
   print(patt[pos:(pos + w)])
