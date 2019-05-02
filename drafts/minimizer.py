@@ -1,4 +1,5 @@
 from sarray import Sarray
+from random import randint
 class minimizer:
   def __init__(self, pat, k_max, get_mnm):
     self.k_max = k_max
@@ -16,7 +17,7 @@ class minimizer:
       self.minimizer_st.append(next_lvl)
       bucket += bucket
 
-  def get_minimizer(self, k, w, pos):
+  def get_minimizer_pos(self, k, w, pos):
     if k + w < self.k_max:
       return -1
     bucket = 1
@@ -27,6 +28,9 @@ class minimizer:
     bucket //= 2
     ind -= 1
     pos = self.get_mnm(self.minimizer_st[ind][pos], self.minimizer_st[ind][pos + w - 1 - bucket])
+    return pos
+  def get_minimizer(self, k, w, pos):
+    pos = self.get_minimizer_pos(k, w, pos)
     return self.pat[pos:(pos+k)]
     
 
@@ -43,10 +47,20 @@ def comp2(x, y, inv_sarray):
   else:
     return y
 
-patt = "abacabadabacaba"
+patt = ""
+dics = {}
+i = 0
+while i < 100000:
+  i += 1
+  patt += "actg"[randint(0,3)]
+print(patt)
 srr = Sarray(patt)
-mmn = minimizer(patt, 3, lambda x, y: comp2(x,y,srr.rank))
+k = 8
+mmn = minimizer(patt, k, lambda x, y: comp2(x,y,srr.rank))
 while True:
-  [k, w, pos] = list(map(lambda x:eval(x), input().split(' ')))
-  print(patt[pos:(pos + w)])
-  print(mmn.get_minimizer(k, w, pos))
+  # [k, w, pos] = list(map(lambda x:eval(x), input().split(' ')))
+  w = 100
+  for pos in range(0, 100000 - k - w):
+    dics[mmn.get_minimizer_pos(k, w, pos)] = True
+  break
+print(len(dics.keys()))
