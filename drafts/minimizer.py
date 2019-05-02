@@ -16,7 +16,7 @@ class minimizer:
       self.minimizer_st.append(next_lvl)
       bucket += bucket
 
-  def get_minimizer(self, k, w, pos):
+  def get_minimizer_pos(self, k, w, pos):
     if k + w < self.k_max:
       return -1
     bucket = 1
@@ -27,6 +27,9 @@ class minimizer:
     bucket //= 2
     ind -= 1
     pos = self.get_mnm(self.minimizer_st[ind][pos], self.minimizer_st[ind][pos + w - 1 - bucket])
+    return pos
+  def get_minimizer(self, k, w, pos):
+    pos = self.get_minimizer_pos(k, w, pos)
     return self.pat[pos:(pos+k)]
     
 
@@ -43,10 +46,31 @@ def comp2(x, y, inv_sarray):
   else:
     return y
 
-patt = "abacabadabacaba"
-srr = Sarray(patt)
-mmn = minimizer(patt, 3, lambda x, y: comp2(x,y,srr.rank))
-while True:
-  [k, w, pos] = list(map(lambda x:eval(x), input().split(' ')))
-  print(patt[pos:(pos + w)])
-  print(mmn.get_minimizer(k, w, pos))
+fle = open('dna.200MB', 'r')
+patt = fle.read()
+sze = 10000000
+srr = Sarray(patt[0:sze])
+mmn = minimizer(patt[0:sze], 3, lambda x, y: comp2(x,y,srr.rank))
+
+for wpot in range(2,10):
+  w = 10 * (2 ** wpot)
+  for kpot in range(4,7):
+    indx = {}
+    k = 2 ** kpot
+    for pos in range(sze - k - w):
+      minimizer_pos = mmn.get_minimizer_pos(k, w, pos)
+      key = patt[minimizer_pos:(minimizer_pos + k)]
+      if key not in indx:
+        indx[key] = {}
+      indx[patt[minimizer_pos:(minimizer_pos + k)]][minimizer_pos] = True
+    cnt = 0
+    for key in indx:
+      for key2 in indx[key]:
+        cnt += 1
+    print(k, w, cnt, sep=', ')
+
+cnt = 0
+for key in indx:
+  for key2 in indx[key]:
+    cnt += 1
+print(cnt)
