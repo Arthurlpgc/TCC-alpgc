@@ -1,7 +1,6 @@
 from sarray import Sarray
 class minimizer:
-  def __init__(self, pat, k_max, get_mnm):
-    self.k_max = k_max
+  def __init__(self, pat, get_mnm):
     self.sze = len(pat)
     self.pat = pat
     self.get_mnm = get_mnm
@@ -17,8 +16,6 @@ class minimizer:
       bucket += bucket
 
   def get_minimizer_pos(self, k, w, pos):
-    if k + w < self.k_max:
-      return -1
     bucket = 1
     ind = 0
     while bucket <= w:
@@ -48,29 +45,64 @@ def comp2(x, y, inv_sarray):
 
 fle = open('dna.200MB', 'r')
 patt = fle.read()
+patt = patt[0:sze]
 sze = 10000000
 srr = Sarray(patt[0:sze])
-mmn = minimizer(patt[0:sze], 3, lambda x, y: comp2(x,y,srr.rank))
+mmn = minimizer(patt[0:sze], lambda x, y: comp2(x,y,srr.rank))
 
-for wpot in range(2,10):
-  w = 10 * (2 ** wpot)
-  for kpot in range(4,7):
-    indx = {}
-    k = 2 ** kpot
-    for pos in range(sze - k - w):
-      minimizer_pos = mmn.get_minimizer_pos(k, w, pos)
-      key = patt[minimizer_pos:(minimizer_pos + k)]
-      if key not in indx:
-        indx[key] = {}
-      indx[patt[minimizer_pos:(minimizer_pos + k)]][minimizer_pos] = True
-    cnt = 0
-    for key in indx:
-      for key2 in indx[key]:
-        cnt += 1
-    print(k, w, cnt, sep=', ')
+w = 100
+Ks = []
+indx = {}
+for kpot in range(4,7):
+  k = 2 ** kpot
+  Ks.append(k)
+  for pos in range(sze - k - w):
+    minimizer_pos = mmn.get_minimizer_pos(k, w, pos)
+    key = patt[minimizer_pos:(minimizer_pos + k)]
+    if key not in indx:
+      indx[key] = {}
+    indx[patt[minimizer_pos:(minimizer_pos + k)]][minimizer_pos] = True
+  cnt = 0
+  for key in indx:
+    for key2 in indx[key]:
+      cnt += 1
+  print(k, w, cnt, sep=', ')
 
-cnt = 0
-for key in indx:
-  for key2 in indx[key]:
-    cnt += 1
-print(cnt)
+import random
+runs = 1000
+stats = {}
+prob_del = 0.001
+prob_ins = 0.001
+prob_mut = 0.001
+offset = 100
+
+def mutate(patt, prob_del, prob_ins, prob_mut):
+  i = 0
+  ret = ''
+  while i < len(patt):
+    p = random.uniform(0, 1)
+    if p < prob_del:
+      i += 1
+    elif p < prob_del + prob_ins:
+      ret += 'ACTG'[random.randint(0, 3)]
+    elif p < prob_del + prob_ins + prob_mut:
+      ret += 'ACTG'[random.randint(0, 3)]
+      i += 1
+    else:
+      ret += patt[i]
+      i += 1
+  return ret
+
+while runs > 0:
+  runs -= 1
+  stt = random.randint(0, sze - w - Ks[-1] - offset)
+  sub_patt = patt[stt:(stt + w + Ks[-1] + offset)]
+  sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
+  srr = Sarray(sub_patt)
+  mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
+  for k in Ks:
+    mnm = mmn.get_minimizer(k, w, stt)
+    if mnm in indx: # Positive
+      print('pos')
+    else: # Negative
+      print('neg')
