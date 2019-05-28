@@ -1,13 +1,17 @@
-import copy 
-
+import copy, sys
+from logger import logger
+import math
 class Sarray:
-  def __init__(self, pat):
+  def __init__(self, pat, log = False):
     self.sarray = []
     sze = len(pat)
+    lgg = logger(int(math.log(len(pat),2)) + 1)
     for i in range(sze):
       self.sarray.append([[ord(pat[i]),0],i])
     bucket = 1
     while bucket <= sze:
+      if log:
+        lgg.log('Building bucket: ', bucket)
       rank = [0]*sze
       for i in range(sze):
         cr = self.sarray[i]

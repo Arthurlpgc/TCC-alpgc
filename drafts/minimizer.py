@@ -1,4 +1,6 @@
 from sarray import Sarray
+from logger import logger
+import sys
 class minimizer:
   def __init__(self, pat, get_mnm):
     self.sze = len(pat)
@@ -43,17 +45,21 @@ def comp2(x, y, inv_sarray):
   else:
     return y
 
-fle = open('dna.200MB', 'r')
+fle = open('dna.50MB', 'r')
 patt = fle.read()
-patt = patt[0:sze]
 sze = 10000000
-srr = Sarray(patt[0:sze])
+patt = patt[0:sze]
+srr = Sarray(patt[0:sze], True)
 mmn = minimizer(patt[0:sze], lambda x, y: comp2(x,y,srr.rank))
 
 w = 100
 Ks = []
 indx = {}
-for kpot in range(4,7):
+min_kpot = 4
+max_kpot = 9
+lgg = logger(max_kpot - min_kpot)
+for kpot in range(min_kpot,max_kpot):
+  lgg.log('Building K index: ', kpot)
   k = 2 ** kpot
   Ks.append(k)
   for pos in range(sze - k - w):
@@ -69,12 +75,12 @@ for kpot in range(4,7):
   print(k, w, cnt, sep=', ')
 
 import random
-runs = 1000
+runs = 10000
 stats = {}
 prob_del = 0.001
 prob_ins = 0.001
 prob_mut = 0.001
-offset = 100
+offset = 10
 
 def mutate(patt, prob_del, prob_ins, prob_mut):
   i = 0
@@ -92,17 +98,33 @@ def mutate(patt, prob_del, prob_ins, prob_mut):
       ret += patt[i]
       i += 1
   return ret
-
+cnt = {}
+for k in Ks:
+  cnt[k] = {'FP':0, 'TP':0, 'FN':0}
+lgg = logger(runs / 100)
 while runs > 0:
   runs -= 1
+  if runs % 100 == 0:
+    lgg.log('Remaining runs:', runs)
   stt = random.randint(0, sze - w - Ks[-1] - offset)
   sub_patt = patt[stt:(stt + w + Ks[-1] + offset)]
   sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
+  if len(sub_patt) < (w + Ks[-1]):
+    continue
   srr = Sarray(sub_patt)
   mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
   for k in Ks:
-    mnm = mmn.get_minimizer(k, w, stt)
-    if mnm in indx: # Positive
-      print('pos')
-    else: # Negative
-      print('neg')
+    for stt2 in range(0, len(sub_patt) - k - w):
+      mnm = mmn.get_minimizer(k, w, stt2)
+      if mnm in indx: # Positive
+        tr = False
+        for mnm2 in indx[mnm]:
+          if mnm2 >= stt and mnm2 <= stt + k + w:
+            tr = True
+        if tr:
+          cnt[k]['TP'] += 1
+        else:
+          cnt[k]['FP'] += 1
+      else: # Negative
+        cnt[k]['FN'] += 1
+print(cnt)
