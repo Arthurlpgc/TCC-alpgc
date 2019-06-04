@@ -47,12 +47,13 @@ def comp2(x, y, inv_sarray):
 
 fle = open('dna.50MB', 'r')
 patt = fle.read()
+patt = patt.replace('\n', '')
 sze = 10000000
 patt = patt[0:sze]
 srr = Sarray(patt[0:sze], True)
 mmn = minimizer(patt[0:sze], lambda x, y: comp2(x,y,srr.rank))
 
-w = 100
+w = 1000
 Ks = []
 indx = {}
 min_kpot = 4
@@ -62,8 +63,8 @@ for kpot in range(min_kpot,max_kpot):
   lgg.log('Building K index: ', kpot)
   k = 2 ** kpot
   Ks.append(k)
-  for pos in range(sze - k - w):
-    minimizer_pos = mmn.get_minimizer_pos(k, w, pos)
+  for pos in range(sze - w):
+    minimizer_pos = mmn.get_minimizer_pos(k, w - k, pos)
     key = patt[minimizer_pos:(minimizer_pos + k)]
     if key not in indx:
       indx[key] = {}
@@ -77,9 +78,9 @@ for kpot in range(min_kpot,max_kpot):
 import random
 runs = 10000
 stats = {}
-prob_del = 0.001
-prob_ins = 0.001
-prob_mut = 0.001
+prob_del = 0.005
+prob_ins = 0.005
+prob_mut = 0.005
 offset = 10
 
 def mutate(patt, prob_del, prob_ins, prob_mut):
@@ -106,20 +107,21 @@ while runs > 0:
   runs -= 1
   if runs % 100 == 0:
     lgg.log('Remaining runs:', runs)
-  stt = random.randint(0, sze - w - Ks[-1] - offset)
-  sub_patt = patt[stt:(stt + w + Ks[-1] + offset)]
+  stt = random.randint(0, sze - w - offset)
+  sub_patt = patt[stt:(stt + w + offset)]
   sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
-  if len(sub_patt) < (w + Ks[-1]):
+  if len(sub_patt) < (w):
     continue
   srr = Sarray(sub_patt)
   mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
   for k in Ks:
-    for stt2 in range(0, len(sub_patt) - k - w):
-      mnm = mmn.get_minimizer(k, w, stt2)
+    for stt2 in range(0, len(sub_patt) - w):
+      mnm = mmn.get_minimizer(k, w - k, stt2)
       if mnm in indx: # Positive
         tr = False
         for mnm2 in indx[mnm]:
-          if mnm2 >= stt and mnm2 <= stt + k + w:
+          assert(mnm == patt[mnm2:(mnm2+len(mnm))])
+          if mnm2 >= stt and mnm2 <= stt + w - k:
             tr = True
         if tr:
           cnt[k]['TP'] += 1
@@ -128,3 +130,12 @@ while runs > 0:
       else: # Negative
         cnt[k]['FN'] += 1
 print(cnt)
+cnt_div = {}
+for key in cnt:
+  cnt_div[key] = {}
+  for key2 in cnt[key]:
+    for key3 in cnt[key]:
+      if key2 == key3:
+        continue
+      cnt_div[key]["{}/{}".format(key2,key3)] = cnt[key][key2] / max(cnt[key][key3], 1)
+  print(key,cnt_div[key])
