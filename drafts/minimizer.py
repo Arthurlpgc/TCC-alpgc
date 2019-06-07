@@ -45,21 +45,23 @@ def comp2(x, y, inv_sarray):
   else:
     return y
 
+test_run = 0
+
 fle = open('dna.50MB', 'r')
 patt = fle.read()
 patt = patt.replace('\n', '')
-sze = 10000000
+sze = 10000000 // (1000 ** test_run)
 patt = patt[0:sze]
 srr = Sarray(patt[0:sze], True)
 mmn = minimizer(patt[0:sze], lambda x, y: comp2(x,y,srr.rank))
 
-w = 1000
+w = 200
 Ks = []
 indx = {}
 min_kpot = 4
-max_kpot = 9
-lgg = logger(max_kpot - min_kpot)
-for kpot in range(min_kpot,max_kpot):
+max_kpot = 7
+lgg = logger(max_kpot - min_kpot + 1)
+for kpot in range(min_kpot, max_kpot + 1):
   lgg.log('Building K index: ', kpot)
   k = 2 ** kpot
   Ks.append(k)
@@ -76,12 +78,11 @@ for kpot in range(min_kpot,max_kpot):
   print(k, w, cnt, sep=', ')
 
 import random
-runs = 10000
+runs = 10000 // (100 ** test_run)
 stats = {}
 prob_del = 0.005
 prob_ins = 0.005
 prob_mut = 0.005
-offset = 10
 
 def mutate(patt, prob_del, prob_ins, prob_mut):
   i = 0
@@ -99,43 +100,74 @@ def mutate(patt, prob_del, prob_ins, prob_mut):
       ret += patt[i]
       i += 1
   return ret
-cnt = {}
+cnt = { -1: {'FP':0, 'TP':0, 'FN':0, 'FPS':0, 'TPS':0 } }
 for k in Ks:
-  cnt[k] = {'FP':0, 'TP':0, 'FN':0}
+  cnt[k] = {'FP':0, 'TP':0, 'FN':0, 'FPS':0, 'TPS':0 }
 lgg = logger(runs / 100)
+patt_size = 1000
 while runs > 0:
   runs -= 1
   if runs % 100 == 0:
     lgg.log('Remaining runs:', runs)
-  stt = random.randint(0, sze - w - offset)
-  sub_patt = patt[stt:(stt + w + offset)]
+  stt = random.randint(0, sze - patt_size)
+  sub_patt = patt[stt:(stt + patt_size)]
   sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
   if len(sub_patt) < (w):
     continue
   srr = Sarray(sub_patt)
   mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
-  for k in Ks:
-    for stt2 in range(0, len(sub_patt) - w):
+  for stt2 in range(0, len(sub_patt) - w):
+    for k in Ks:
       mnm = mmn.get_minimizer(k, w - k, stt2)
       if mnm in indx: # Positive
         tr = False
+        trc = 0
         for mnm2 in indx[mnm]:
           assert(mnm == patt[mnm2:(mnm2+len(mnm))])
           if mnm2 >= stt and mnm2 <= stt + w - k:
             tr = True
+            trc += 1
         if tr:
           cnt[k]['TP'] += 1
+          cnt[k]['TPS'] += trc
+          cnt[k]['FPS'] += len(indx[mnm]) - trc
         else:
           cnt[k]['FP'] += 1
+          cnt[k]['FPS'] += len(indx[mnm])
       else: # Negative
         cnt[k]['FN'] += 1
+    ind = len(Ks) - 1
+    found = False
+    while (ind >= 0) and not found:
+      k = Ks[ind]
+      mnm = mmn.get_minimizer(k, w - k, stt2)
+      if mnm in indx: # Positive
+        tr = False
+        trc = 0
+        for mnm2 in indx[mnm]:
+          assert(mnm == patt[mnm2:(mnm2+len(mnm))])
+          if mnm2 >= stt and mnm2 <= stt + w - k:
+            tr = True
+            trc += 1
+        found = True
+        if tr:
+          cnt[-1]['TP'] += 1
+          cnt[-1]['TPS'] += trc
+          cnt[-1]['FPS'] += len(indx[mnm]) - trc
+        else:
+          cnt[-1]['FP'] += 1
+          cnt[-1]['FPS'] += len(indx[mnm])
+      ind -= 1
+    if not found:
+      cnt[-1]['FN'] += 1
 print(cnt)
 cnt_div = {}
 for key in cnt:
-  cnt_div[key] = {}
+  print(key, end=":\t")
   for key2 in cnt[key]:
     for key3 in cnt[key]:
       if key2 == key3:
         continue
-      cnt_div[key]["{}/{}".format(key2,key3)] = cnt[key][key2] / max(cnt[key][key3], 1)
-  print(key,cnt_div[key])
+      print("{}/{}".format(key2,key3), '{:.3f}'.format(cnt[key][key2] / max(cnt[key][key3], 1)), end=' | ')
+  print()
+
