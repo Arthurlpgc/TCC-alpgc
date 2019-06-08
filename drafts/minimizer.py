@@ -116,6 +116,7 @@ while runs > 0:
     continue
   srr = Sarray(sub_patt)
   mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
+  finger_print = []
   for stt2 in range(0, len(sub_patt) - w):
     for k in Ks:
       mnm = mmn.get_minimizer(k, w - k, stt2)
@@ -159,7 +160,10 @@ while runs > 0:
           cnt[-1]['FPS'] += len(indx[mnm])
       ind -= 1
     if not found:
+      mnm = ""
       cnt[-1]['FN'] += 1
+    if len(finger_print) == 0 or finger_print[-1]["mnm"] != mnm:
+      finger_print.append({"mnm": mnm, "pos": stt2})
 print(cnt)
 cnt_div = {}
 for key in cnt:
