@@ -45,7 +45,7 @@ def comp2(x, y, inv_sarray):
   else:
     return y
 
-test_run = 0
+test_run = 1
 
 fle = open('dna.50MB', 'r')
 patt = fle.read()
@@ -57,33 +57,28 @@ mmn = minimizer(patt[0:sze], lambda x, y: comp2(x,y,srr.rank))
 
 w = 200
 Ks = []
-indx = {}
-min_kpot = 4
-max_kpot = 7
-lgg = logger(max_kpot - min_kpot + 1)
-for kpot in range(min_kpot, max_kpot + 1):
-  lgg.log('Building K index: ', kpot)
-  k = 2 ** kpot
-  Ks.append(k)
-  for pos in range(sze - w):
-    minimizer_pos = mmn.get_minimizer_pos(k, w - k, pos)
-    key = patt[minimizer_pos:(minimizer_pos + k)]
-    if key not in indx:
-      indx[key] = {}
-    indx[patt[minimizer_pos:(minimizer_pos + k)]][minimizer_pos] = True
-  cnt = 0
-  for key in indx:
-    for key2 in indx[key]:
-      cnt += 1
-  print(k, w, cnt, sep=', ')
+def get_index(w, Ks, patt, mmn):
+  indx = {}
+  lgg = logger(len(Ks))
+  for k in Ks:
+    lgg.log('Building K index: ', k)
+    for pos in range(sze - w):
+      minimizer_pos = mmn.get_minimizer_pos(k, w - k, pos)
+      key = patt[minimizer_pos:(minimizer_pos + k)]
+      if key not in indx:
+        indx[key] = {}
+      indx[patt[minimizer_pos:(minimizer_pos + k)]][minimizer_pos] = True
+  return indx
 
+indx = get_index(w, [16,32,64,128], patt, mmn)
+# print(indx)
 import random
 runs = 10000 // (100 ** test_run)
 stats = {}
 prob_del = 0.005
 prob_ins = 0.005
 prob_mut = 0.005
-
+Ks=[16,32,64,128]
 def mutate(patt, prob_del, prob_ins, prob_mut):
   i = 0
   ret = ''

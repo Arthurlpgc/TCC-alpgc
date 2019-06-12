@@ -5,7 +5,9 @@ class Sarray:
   def __init__(self, pat, log = False):
     self.sarray = []
     sze = len(pat)
-    lgg = logger(int(math.log(len(pat),2)) + 1)
+    lgg = None
+    if log:
+      lgg = logger(int(math.log(len(pat),2)) + 1)
     for i in range(sze):
       self.sarray.append([[ord(pat[i]),0],i])
     bucket = 1
