@@ -48,15 +48,16 @@ def comp2(x, y, inv_sarray):
 test_run = 1
 
 fle = open('dna.50MB', 'r')
-patt = fle.read()
-patt = patt.replace('\n', '')
+pattern = fle.read()
+pattern = pattern.replace('\n', '')
 sze = 10000000 // (1000 ** test_run)
-patt = patt[0:sze]
-srr = Sarray(patt[0:sze], True)
-mmn = minimizer(patt[0:sze], lambda x, y: comp2(x,y,srr.rank))
+pattern = pattern[0:sze]
+srr = Sarray(pattern, True)
+mmn = minimizer(pattern, lambda x, y: comp2(x,y,srr.rank))
 
 w = 200
-Ks = []
+Ks = [16,18,20,22,24,32,64,128]
+
 def get_index(w, Ks, patt, mmn):
   indx = {}
   lgg = logger(len(Ks))
@@ -70,15 +71,14 @@ def get_index(w, Ks, patt, mmn):
       indx[patt[minimizer_pos:(minimizer_pos + k)]][minimizer_pos] = True
   return indx
 
-indx = get_index(w, [16,32,64,128], patt, mmn)
+indx = get_index(w, Ks, pattern, mmn)
 # print(indx)
 import random
 runs = 10000 // (100 ** test_run)
 stats = {}
-prob_del = 0.005
-prob_ins = 0.005
-prob_mut = 0.005
-Ks=[16,32,64,128]
+prob_del = 0.001
+prob_ins = 0.001
+prob_mut = 0.001
 def mutate(patt, prob_del, prob_ins, prob_mut):
   i = 0
   ret = ''
@@ -99,68 +99,80 @@ cnt = { -1: {'FP':0, 'TP':0, 'FN':0, 'FPS':0, 'TPS':0 } }
 for k in Ks:
   cnt[k] = {'FP':0, 'TP':0, 'FN':0, 'FPS':0, 'TPS':0 }
 lgg = logger(runs / 100)
-patt_size = 1000
-while runs > 0:
-  runs -= 1
-  if runs % 100 == 0:
-    lgg.log('Remaining runs:', runs)
-  stt = random.randint(0, sze - patt_size)
-  sub_patt = patt[stt:(stt + patt_size)]
-  sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
-  if len(sub_patt) < (w):
-    continue
-  srr = Sarray(sub_patt)
-  mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
-  finger_print = []
-  for stt2 in range(0, len(sub_patt) - w):
-    for k in Ks:
-      mnm = mmn.get_minimizer(k, w - k, stt2)
-      if mnm in indx: # Positive
-        tr = False
-        trc = 0
-        for mnm2 in indx[mnm]:
-          assert(mnm == patt[mnm2:(mnm2+len(mnm))])
-          if mnm2 >= stt and mnm2 <= stt + w - k:
-            tr = True
-            trc += 1
-        if tr:
-          cnt[k]['TP'] += 1
-          cnt[k]['TPS'] += trc
-          cnt[k]['FPS'] += len(indx[mnm]) - trc
-        else:
-          cnt[k]['FP'] += 1
-          cnt[k]['FPS'] += len(indx[mnm])
-      else: # Negative
-        cnt[k]['FN'] += 1
-    ind = len(Ks) - 1
-    found = False
-    while (ind >= 0) and not found:
-      k = Ks[ind]
-      mnm = mmn.get_minimizer(k, w - k, stt2)
-      if mnm in indx: # Positive
-        tr = False
-        trc = 0
-        for mnm2 in indx[mnm]:
-          assert(mnm == patt[mnm2:(mnm2+len(mnm))])
-          if mnm2 >= stt and mnm2 <= stt + w - k:
-            tr = True
-            trc += 1
-        found = True
-        if tr:
-          cnt[-1]['TP'] += 1
-          cnt[-1]['TPS'] += trc
-          cnt[-1]['FPS'] += len(indx[mnm]) - trc
-        else:
-          cnt[-1]['FP'] += 1
-          cnt[-1]['FPS'] += len(indx[mnm])
-      ind -= 1
-    if not found:
-      mnm = ""
-      cnt[-1]['FN'] += 1
-    if len(finger_print) == 0 or finger_print[-1]["mnm"] != mnm:
-      finger_print.append({"mnm": mnm, "pos": stt2})
+
+patts = open('files/m130928_232712_42213_c100518541910000001823079209281310_s1_p0.1.subreads.fastq', 'r').read()
+patts = patts.split('\n+\n')
+patts = patts[:-1]
+for patt_long in patts:
+  patt_long = patt_long.split('\n')
+  patt = patt_long[-1]
+  patt_data = patt_long[-2]
+  print('[',len(patt), patt_data,']')
+
+
+
+# patt_size = 1000
+# while runs > 0:
+#   runs -= 1
+#   if runs % 100 == 0:
+#     lgg.log('Remaining runs:', runs)
+#   stt = random.randint(0, sze - patt_size)
+#   sub_patt = patt[stt:(stt + patt_size)]
+#   sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
+#   if len(sub_patt) < (w):
+#     continue
+#   srr = Sarray(sub_patt)
+#   mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
+#   finger_print = []
+#   for stt2 in range(0, len(sub_patt) - w):
+#     for k in Ks:
+#       mnm = mmn.get_minimizer(k, w - k, stt2)
+#       if mnm in indx: # Positive
+#         tr = False
+#         trc = 0
+#         for mnm2 in indx[mnm]:
+#           assert(mnm == patt[mnm2:(mnm2+len(mnm))])
+#           if mnm2 >= stt and mnm2 <= stt + w - k:
+#             tr = True
+#             trc += 1
+#         if tr:
+#           cnt[k]['TP'] += 1
+#           cnt[k]['TPS'] += trc
+#           cnt[k]['FPS'] += len(indx[mnm]) - trc
+#         else:
+#           cnt[k]['FP'] += 1
+#           cnt[k]['FPS'] += len(indx[mnm])
+#       else: # Negative
+#         cnt[k]['FN'] += 1
+#     ind = len(Ks) - 1
+#     found = False
+#     while (ind >= 0) and not found:
+#       k = Ks[ind]
+#       mnm = mmn.get_minimizer(k, w - k, stt2)
+#       if mnm in indx: # Positive
+#         tr = False
+#         trc = 0
+#         for mnm2 in indx[mnm]:
+#           assert(mnm == patt[mnm2:(mnm2+len(mnm))])
+#           if mnm2 >= stt and mnm2 <= stt + w - k:
+#             tr = True
+#             trc += 1
+#         found = True
+#         if tr:
+#           cnt[-1]['TP'] += 1
+#           cnt[-1]['TPS'] += trc
+#           cnt[-1]['FPS'] += len(indx[mnm]) - trc
+#         else:
+#           cnt[-1]['FP'] += 1
+#           cnt[-1]['FPS'] += len(indx[mnm])
+#       ind -= 1
+#     if not found:
+#       mnm = ""
+#       cnt[-1]['FN'] += 1
+#     if len(finger_print) == 0 or finger_print[-1]["mnm"] != mnm:
+#       finger_print.append({"mnm": mnm, "pos": stt2})
+
 print(cnt)
-cnt_div = {}
 for key in cnt:
   print(key, end=":\t")
   for key2 in cnt[key]:

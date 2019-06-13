@@ -1,4 +1,30 @@
 \documentclass{article}
+\usepackage{amsmath}
+\usepackage{biblatex}
+
+\usepackage{algpseudocode,algorithm}
+
+% Declaracoes em Português
+\algrenewcommand\algorithmicend{\textbf{fim}}
+\algrenewcommand\algorithmicdo{\textbf{faça}}
+\algrenewcommand\algorithmicwhile{\textbf{enquanto}}
+\algrenewcommand\algorithmicfor{\textbf{para}}
+\algrenewcommand\algorithmicif{\textbf{se}}
+\algrenewcommand\algorithmicthen{\textbf{então}}
+\algrenewcommand\algorithmicelse{\textbf{senão}}
+\algrenewcommand\algorithmicreturn{\textbf{devolve}}
+\algrenewcommand\algorithmicfunction{\textbf{Função}}
+
+% Rearranja os finais de cada estrutura
+\algrenewtext{EndWhile}{\algorithmicend\ \algorithmicwhile}
+\algrenewtext{EndFor}{\algorithmicend\ \algorithmicfor}
+\algrenewtext{EndIf}{\algorithmicend\ \algorithmicif}
+\algrenewtext{EndFunction}{\algorithmicend\ \textbf{função}}
+
+% O comando For, a seguir, retorna 'para #1 -- #2 até #3 faça'
+\algnewcommand\algorithmicto{\textbf{até}}
+\algrenewtext{For}[3]%
+{\algorithmicfor\ #1 $\gets$ #2 \algorithmicto\ #3 \algorithmicdo}
 
 \begin{document}
 
@@ -6,17 +32,39 @@
 \author{Arthur Latache}
 
 \maketitle
-
 \begin{abstract}
-Currently, to read DNA we need an heuristic, and one of the most used is finding a substring that represents a window(calling them minimizers), and checking where it occurs in the main pattern, and then matching with a more costly algorithm. To find a the minimizer of a window they need two parameters: window size and substring size, nowadays due to current algorithms, these parameters are fixed in size. So we will study the possibility and advantages of using these parameters with a variable value. To evaluate the we results we did ...
+Atualmente, na leitura do DNA nos precisamos de heurísticas, ja que o matching é inexato. A heurística mais utilizada é encontrar uma substring que representa a janela(Essas substrings são chamadas de minimizers), e procurar essa substring na sequência base e depois avaliar a ocorrência com um algoritmo mais custoso. Para encontrar o minimizer de uma janela precisamos de dois parametros: Tamanho da janela e do minimizer. Os algoritmos atuais usam parametros fixos para encontrar o minimizer. Nesse artigo exploramos a possibilidade e as vantagens de flexibilizar essas variaveis, com a tentativa de melhorar a busca de ocorrências na sequência base. Para avaliar os resultados compararemos com algumas das estrategias atuais para encontrar essas ocorrências.
 \end{abstract}
-\section{Introduction}
-Here is the text of your introduction.
+\section{Introdução}
+\subsection{Leitura do DNA atual}
+\paragraph{}{Para ler o DNA nos usamos tecnologias que conseguem ler em pequentas partes(entre 200 e 20000 pares de bases). Precisamos posicionar essas pequenas leituras no genoma inicial para poder analizar essas leituras. Uma das heurísticas mais comuns usada para posicionar essas pequenas leituras se chama minimizers,e constitui de encontrar substrings que representam janelas maiores, para fazer encontrar essas substrings na sequência base.}
+\subsection{Parametros da estrategia de minimizers}
+\paragraph{}{A estrategia de minimizers geralmente utiliza dois parametros para encontrar uma ocorrência. Esses paramentros são tamanho da janela e do minimizer. O tamanho da janela especifica quantas bases vão ser definidas por um unico minimizer, esse tamanho é estritamente maior que o tamanho do minimizer, uma vez que o minimizer tem que estar contido na janela. As implementaçōes atuais usam parametros fixos, devido as restriçōes dos algoritmos usados, por isso exploramos a possibilidade de variar o tamanho do minimizer. Os algortimos desenvolvidos nesse artigo conseguem flexibilizar tanto to tamanho do minimizer como o tamanho da janela, com pouco ou nenhum custo extra.}
+\section{Metodologia}
+\subsection{Consideraçōes sobre a complexidade}
+\paragraph{}{Para testar a possibilidade de flexibilizar o tamanho do minimizer, precisamos de novos algoritmos que quando variassemos os parametros não adicionam muito a complexidade em tempo da busca. O novo algoritmo de indexação devia ser no máximo \(O(N * logN)\), com \(N\) sendo o tamanho da sequência base.} 
+\subsection{Preprocessamento}
+\paragraph{}{Sendo \(Suf(i)\) um sufixo da sequência base, começando em \(i\) e \(Seq\) a sequência base, a seguinte propriedade é necessaria para continuar: \(\forall{i, j} | 0 <= i, j < |Seq| (\forall...) \)}
+\subsubsection{Comparaçōes}
+\paragraph{}{Nos dizemos que o menor entre dois sufixos é o menor lexicograficamente. Fazer essa comparação do jeito naive seria \(O(N)\), então usamos array de sufixos para otimizar esse processo. Contruimos um array de sufixos da string inicial e pegamos o inverso do array de sufixos: \(invSuf(pos) = y | suf\_array[y] = pos\), sendo \(suf\_array\) o array de sufixos. A construção do array de sufixos so ocorre uma vez e pode ser feita em \(O(N)\) sendo \(N\) o tamanho da sequência base. Com isso conseguimos fazer \(invSuf\) ser possivel em \(O(1)\).} 
+% \begin{algorithm}
+%   \caption{Valor Absoluto}
+%   \begin{algorithmic}[1]
+%   \Function{Absoluto}{x}
+%     \If {$x < 0$}
+%       \State \Return $-x$
+%     \Else
+%       \State \Return $x$
+%     \EndIf
+%   \EndFunction
+%   \end{algorithmic}
+%   \end{algorithm}
+\section{Developments}
+Write your subsection text here.
 
-\section{Subsection Heading Here}
+\section{Results}
 Write your subsection text here.
 
 \section{Conclusion}
 Write your conclusion here.
-
 \end{document}
