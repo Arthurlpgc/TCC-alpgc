@@ -43,10 +43,16 @@ Atualmente, na leitura do DNA nos precisamos de heurísticas, ja que o matching 
 \section{Metodologia}
 \subsection{Consideraçōes sobre a complexidade}
 \paragraph{}{Para testar a possibilidade de flexibilizar o tamanho do minimizer, precisamos de novos algoritmos que quando variassemos os parametros não adicionam muito a complexidade em tempo da busca. O novo algoritmo de indexação devia ser no máximo \(O(N * logN)\), com \(N\) sendo o tamanho da sequência base.} 
+\subsection{Definiçōes}
+\paragraph{}{Aqui definimos propriedades e funçōes para ser usadas depois:}
+
+\(Prop_1(a, b) = \forall z | z \leq min(|a|,|b|) (a < b \implies Substr(a, z) \leq Substr(a, z) )\)
+
 \subsection{Preprocessamento}
-\paragraph{}{Sendo \(Suf(i)\) um sufixo da sequência base, começando em \(i\) e \(Seq\) a sequência base, a seguinte propriedade é necessaria para continuar: \(\forall{i, j} | 0 <= i, j < |Seq| (\forall...) \)}
+\paragraph{}{Sendo \(Suf(i)\) um sufixo da sequência base, começando em \(i\) e \(Seq\) a sequência base, a seguinte propriedade é necessaria para continuar: \(\forall{i, j} | 0 <= i, j < |Seq|. Prop_1(Suf(i), Suf(j)) \)}
 \subsubsection{Comparaçōes}
 \paragraph{}{Nos dizemos que o menor entre dois sufixos é o menor lexicograficamente. Fazer essa comparação do jeito naive seria \(O(N)\), então usamos array de sufixos para otimizar esse processo. Contruimos um array de sufixos da string inicial e pegamos o inverso do array de sufixos: \(invSuf(pos) = y | suf\_array[y] = pos\), sendo \(suf\_array\) o array de sufixos. A construção do array de sufixos so ocorre uma vez e pode ser feita em \(O(N)\) sendo \(N\) o tamanho da sequência base. Com isso conseguimos fazer \(invSuf\) ser possivel em \(O(1)\).} 
+\subsubsection{Preprocessamento da obtenção dos minimizers}
 % \begin{algorithm}
 %   \caption{Valor Absoluto}
 %   \begin{algorithmic}[1]
