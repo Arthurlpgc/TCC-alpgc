@@ -56,7 +56,7 @@ srr = Sarray(pattern, True)
 mmn = minimizer(pattern, lambda x, y: comp2(x,y,srr.rank))
 
 w = 200
-Ks = [16,18,20,22,24,32,64,128]
+Ks = [32,64,128]
 
 def get_index(w, Ks, patt, mmn):
   indx = {}
@@ -76,9 +76,9 @@ indx = get_index(w, Ks, pattern, mmn)
 import random
 runs = 10000 // (100 ** test_run)
 stats = {}
-prob_del = 0.001
-prob_ins = 0.001
-prob_mut = 0.001
+prob_del = 0.015
+prob_ins = 0.005
+prob_mut = 0.005
 def mutate(patt, prob_del, prob_ins, prob_mut):
   i = 0
   ret = ''
@@ -100,77 +100,85 @@ for k in Ks:
   cnt[k] = {'FP':0, 'TP':0, 'FN':0, 'FPS':0, 'TPS':0 }
 lgg = logger(runs / 100)
 
-patts = open('files/m130928_232712_42213_c100518541910000001823079209281310_s1_p0.1.subreads.fastq', 'r').read()
-patts = patts.split('\n+\n')
-patts = patts[:-1]
-for patt_long in patts:
-  patt_long = patt_long.split('\n')
-  patt = patt_long[-1]
-  patt_data = patt_long[-2]
-  print('[',len(patt), patt_data,']')
+# patts = open('files/m130928_232712_42213_c100518541910000001823079209281310_s1_p0.1.subreads.fastq', 'r').read()
+# patts = patts.split('\n+\n')
+# patts = patts[:-1]
+# for patt_long in patts:
+#   patt_long = patt_long.split('\n')
+#   patt = patt_long[-1]
+#   patt_data = patt_long[-2]
+#   print('[',len(patt), patt_data,']')
 
+def process_overlap(overlap):
+  if len(overlap) == 0:
+    return {'size': 0, 'pos': 0}
+  covered = 0
+  size = 0
+  for minim in overlap:
+    size += minim[2]
+    size -= min(max(covered - minim[1], 0), minim[2])
+    covered = max(covered, minim[1] + minim[2])
+  return {'size': size, 'pos': overlap[len(overlap) // 2][0]}
 
-
-# patt_size = 1000
-# while runs > 0:
-#   runs -= 1
-#   if runs % 100 == 0:
-#     lgg.log('Remaining runs:', runs)
-#   stt = random.randint(0, sze - patt_size)
-#   sub_patt = patt[stt:(stt + patt_size)]
-#   sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
-#   if len(sub_patt) < (w):
-#     continue
-#   srr = Sarray(sub_patt)
-#   mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
-#   finger_print = []
-#   for stt2 in range(0, len(sub_patt) - w):
-#     for k in Ks:
-#       mnm = mmn.get_minimizer(k, w - k, stt2)
-#       if mnm in indx: # Positive
-#         tr = False
-#         trc = 0
-#         for mnm2 in indx[mnm]:
-#           assert(mnm == patt[mnm2:(mnm2+len(mnm))])
-#           if mnm2 >= stt and mnm2 <= stt + w - k:
-#             tr = True
-#             trc += 1
-#         if tr:
-#           cnt[k]['TP'] += 1
-#           cnt[k]['TPS'] += trc
-#           cnt[k]['FPS'] += len(indx[mnm]) - trc
-#         else:
-#           cnt[k]['FP'] += 1
-#           cnt[k]['FPS'] += len(indx[mnm])
-#       else: # Negative
-#         cnt[k]['FN'] += 1
-#     ind = len(Ks) - 1
-#     found = False
-#     while (ind >= 0) and not found:
-#       k = Ks[ind]
-#       mnm = mmn.get_minimizer(k, w - k, stt2)
-#       if mnm in indx: # Positive
-#         tr = False
-#         trc = 0
-#         for mnm2 in indx[mnm]:
-#           assert(mnm == patt[mnm2:(mnm2+len(mnm))])
-#           if mnm2 >= stt and mnm2 <= stt + w - k:
-#             tr = True
-#             trc += 1
-#         found = True
-#         if tr:
-#           cnt[-1]['TP'] += 1
-#           cnt[-1]['TPS'] += trc
-#           cnt[-1]['FPS'] += len(indx[mnm]) - trc
-#         else:
-#           cnt[-1]['FP'] += 1
-#           cnt[-1]['FPS'] += len(indx[mnm])
-#       ind -= 1
-#     if not found:
-#       mnm = ""
-#       cnt[-1]['FN'] += 1
-#     if len(finger_print) == 0 or finger_print[-1]["mnm"] != mnm:
-#       finger_print.append({"mnm": mnm, "pos": stt2})
+def get_overlap(finger_print, cluster_threshold = 10):
+  finger_print = list(set(finger_print))
+  finger_print.sort()
+  best_overlap = {'size': 0, 'pos': 0}
+  overlap = []
+  for fp in finger_print:
+    if len(overlap) == 0:
+      overlap.append(fp)
+    else:
+      if fp[0] - overlap[-1][0] > cluster_threshold:
+        overlap = process_overlap(overlap)
+        if overlap['size'] > best_overlap['size']:
+          best_overlap = overlap
+        overlap = [fp]
+      else:
+        overlap.append(fp)
+  overlap = process_overlap(overlap)
+  if overlap['size'] > best_overlap['size']:
+    best_overlap = overlap
+  print(best_overlap)
+  return best_overlap
+patt_size = 1000
+while runs > 0:
+  runs -= 1
+  if runs % 100 == 0:
+    lgg.log('Remaining runs:', runs)
+  stt = random.randint(0, sze - patt_size)
+  sub_patt = pattern[stt:(stt + patt_size)]
+  sub_patt = mutate(sub_patt, prob_del, prob_ins, prob_mut)
+  if len(sub_patt) < (w):
+    continue
+  srr = Sarray(sub_patt)
+  mmn = minimizer(sub_patt, lambda x, y: comp2(x,y,srr.rank))
+  for k in Ks:
+    finger_print = []
+    for stt2 in range(0, len(sub_patt) - w):
+      mnm_pos = mmn.get_minimizer_pos(k, w - k, stt2)
+      mnm = mmn.pat[mnm_pos:(mnm_pos+k)]
+      if mnm in indx: # Positive
+        for mnm2 in indx[mnm]:
+          finger_print.append((mnm2 - mnm_pos, mnm2, k))
+          assert(mnm == pattern[mnm2:(mnm2+len(mnm))])
+    get_overlap(finger_print)
+  finger_print = []
+  for stt2 in range(0, len(sub_patt) - w):
+    ind = len(Ks) - 1
+    found = False
+    while (ind >= 0) and not found:
+      k = Ks[ind]
+      mnm_pos = mmn.get_minimizer_pos(k, w - k, stt2)
+      mnm = mmn.pat[mnm_pos:(mnm_pos+k)]
+      if mnm in indx: # Positive
+        for mnm2 in indx[mnm]:
+          finger_print.append((mnm2 - mnm_pos, mnm2, k))
+          assert(mnm == pattern[mnm2:(mnm2+len(mnm))])
+        found = True
+      ind -= 1
+  get_overlap(finger_print)
+  
 
 print(cnt)
 for key in cnt:
