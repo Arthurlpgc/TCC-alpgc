@@ -1,0 +1,377 @@
+%% Template para dissertação/tese na classe UFPEthesis
+%% versão 0.9.2
+%% (c) 2005 Paulo G. S. Fonseca
+%% www.cin.ufpe.br/~paguso/ufpethesis
+
+%% Carrega a classe ufpethesis
+%% Opções: * Idiomas
+%%           pt   - português (padrão)
+%%           en   - inglês
+%%         * Tipo do Texto
+%%           bsc  - para monografias de graduação
+%%           msc  - para dissertações de mestrado (padrão)
+%%           qual - exame de qualificação doutorado
+%%           prop - proposta de tese doutorado
+%%           phd  - para teses de doutorado
+%%         * Mídia
+%%           scr  - para versão eletrônica (PDF) / consulte o guia do usuario
+%%         * Estilo
+%%           classic - estilo original à la TAOCP (deprecated)
+%%           std     - novo estilo à la CUP (padrão)
+%%         * Paginação
+%%           oneside - para impressão em face única
+%%           twoside - para impressão em frente e verso (padrão)
+\documentclass[bsc, oneside, scr, 12pt]{ufpethesis}
+
+\usepackage{setspace}
+\usepackage{lineno}
+
+\newenvironment{comment}{\itshape\noindent<begin comment -- ommit this in the final version>\par}{\par\noindent<end comment>\rm}
+
+\newcommand{\minimiser}{\textit{minimiser}\/\xspace}
+\newcommand{\minimisers}{\textit{minimisers}\/\xspace}
+
+
+%% Preâmbulo:
+%% coloque aqui o seu preâmbulo LaTeX, i.e., declaração de pacotes,
+%% (re)definições de macros, medidas, etc.
+
+%% Identificação:
+
+% Universidade
+% e.g. \university{Universidade de Campinas}
+% Na UFPE, comente a linha a seguir
+%\university{<NOME DA UNIVERSIDADE>}
+
+% Endereço (cidade)
+% e.g. \address{Campinas}
+% Na UFPE, comente a linha a seguir
+%\address{<CIDADE DA IES>}
+
+% Instituto ou Centro Acadêmico
+% e.g. \institute{Centro de Ciências Exatas e da Natureza}
+% Comente se não se aplicar
+\institute{Centro de Informática}
+
+% Departamento acadêmico
+% e.g. \department{Departamento de Informática}
+% Comente se não se aplicar
+%\department{<NOME DO DEPARTAMENTO>}
+
+% Programa de pós-graduação
+% e.g. \program{Pós-graduação em Ciência da Computação}
+\program{Graduação em Ciência da Computação}
+
+% Área de titulação
+% e.g. \majorfield{Ciência da Computação}
+\majorfield{Ciência da Computação}
+
+% Título da dissertação/tese
+% e.g. \title{Sobre a conjectura $P=NP$}
+\title{Casamento aproximado de padrões baseado em índices de \textit{minimisers} de comprimento variável}
+
+% Data da defesa
+% e.g. \date{19 de fevereiro de 2003}
+\date{04 de Julho de 2019}
+
+% Autor
+% e.g. \author{José da Silva}
+\author{Arthur Latache Pimentel Gesteira Costa}
+
+% Orientador(a)
+% Opção: [f] - para orientador do sexo feminino
+% e.g. \adviser[f]{Profa. Dra. Maria Santos}
+\adviser{Paulo Gustavo Soares da Fonseca}
+
+% Orientador(a)
+% Opção: [f] - para orientador do sexo feminino
+% e.g. \coadviser{Prof. Dr. Pedro Pedreira}
+% Comente se não se aplicar
+%\coadviser{NOME DO(DA) CO-ORIENTADOR(A)}
+
+%% Inicio do documento
+\begin{document}
+
+%%
+%% Parte pré-textual
+%%
+\frontmatter
+
+% Folha de rosto
+% Comente para ocultar
+\frontpage
+
+% Portada (apresentação)
+% Comente para ocultar
+\presentationpage
+
+% Dedicatória
+% Comente para ocultar
+%\begin{dedicatory}
+%<DIGITE A DEDICATÒRIA AQUI>
+%\end{dedicatory}
+
+% Agradecimentos
+% Se preferir, crie um arquivo à parte e o inclua via \include{}
+%\acknowledgements
+%<DIGITE OS AGRADECIMENTOS AQUI>
+
+% Epígrafe
+% Comente para ocultar
+% e.g.
+%  \begin{epigraph}[Tarde, 1919]{Olavo Bilac}
+%  Última flor do Lácio, inculta e bela,\\
+%  És, a um tempo, esplendor e sepultura;\\
+%  Ouro nativo, que, na ganga impura,\\
+%  A bruta mina entre os cascalhos vela.
+%  \end{epigraph}
+%\begin{epigraph}[<NOTA>]{<AUTOR>}
+%<DIGITE AQUI A CITAÇÂO>
+%\end{epigraph}
+
+\doublespace
+\linenumbers
+
+
+% Resumo em Português
+% Se preferir, crie um arquivo à parte e o inclua via \include{}
+\resumo
+<DIGITE O RESUMO AQUI>
+% Palavras-chave do resumo em Português
+\begin{keywords}
+<DIGITE AS PALAVRAS-CHAVE AQUI>
+\end{keywords}
+
+% Resumo em Inglês
+% Se preferir, crie um arquivo à parte e o inclua via \include{}
+\abstract
+% Palavras-chave do resumo em Inglês
+\begin{keywords}
+<DIGITE AS PALAVRAS-CHAVE AQUI>
+\end{keywords}
+
+% Sumário
+% Comente para ocultar
+\tableofcontents
+
+% Lista de figuras
+% Comente para ocultar
+\listoffigures
+
+% Lista de tabelas
+% Comente para ocultar
+\listoftables
+
+
+
+%%
+%% Parte textual
+%%
+\mainmatter
+
+% É aconselhável criar cada capítulo em um arquivo à parte, digamos
+% "capitulo1.tex", "capitulo2.tex", ... "capituloN.tex" e depois
+% incluí-los com:
+% \include{capitulo1}
+% \include{capitulo2}
+% ...
+% \include{capituloN}
+
+
+\chapter{Introdução}
+
+\begin{comment}
+Neste capítulo devem ser respondidas as questões Q1-2. O capítulo deve conter um background da área necessário para introdução e contextualização do problema específico. Deve-se contar uma história que motive o trabalho, de forma que fique justificada sua importância no contexto da área. Uma vez que o tema esteja suficientemente motivado e justificado, o problema deve ser colocado de maneira clara, explicitando-se os objetivos gerais e específicos do trabalho. Em outras palavras, temos até aqui um desenvolvimento dos dois primeiros tópicos do resumo. O capítulo deve terminar com uma síntese dos resultados/contribuições alcançadas e com uma visão geral dos capítulos subsequentes.
+
+Idealmente, o Cap. 1 deve ser compreensível  pelo menos por qualquer pessoa da área (e.g. de Computação), mesmo que não seja especialista  no tema.
+\end{comment}
+
+\section{Motivação}
+
+Roteiro:
+\begin{enumerate}
+\item Problema do casamento aproximado de texto: definição informal  e suas aplicações. Fixar notação básica: padrão, texto, ...
+\item Problema do casamento de texto e aplicações a Biologia Computacional: busca por regiões homólogas, resequenciamento.
+\item Solução online versus indexada: descrição informal e diferenças em termos de eficiência.
+\item Índices completos versus parciais.
+\item Visão geral da heurística \textit{seed\&extend}
+\end{enumerate}
+
+\section{Objetivo}
+
+A principal contribuição deste trabalho é propor um algoritmo para busca aproximada de padrões com auxílio de um índice parcial de subsequências chamadas \textit{minimisers}. O nosso algoritmo está inspirado em trabalhos anteriores, em particular nas ferramentas de alinhamento \textit{TAPyR} \cite{Fernandes2011} e  \textit{Minimap} \cite{Li2016}. Similar ao TAPyR, nosso algoritmo baseia-se no uso da estratégia \textit{seed\&extend} com uma heurística para combinação de sementes de comprimento variável. Entretanto, diferente do \textit{TAPyr} e a exemplo do \textit{Minimap}, nosso algoritmo baseia-se num índice parcial e mais eficiente de \minimisers. Nosso método diferencia-se do \textit{Minimap} por empregar \minimisers de tamanhos distintos para oferecer um melhor balanço entre a sensibilidade e especificidade do índice.
+
+
+\section{Estrutura desta monografia}
+
+O restante da presente monografia está estruturada da seguinte maneira.
+
+No Capítulo 2, nós introduzimos os conceitos fundamentais e formalizamos o problema do casamento aproximado de padrões com índices parciais baseados em \minimisers. Nós apresentamos os trabalhos relacionados da literatura, em particular o algoritmo \textit{minimap}\cite{} no qual o nosso algoritmo é baseado.
+
+No Capítulo 3, apresentamos uma descrição detalhada dos algoritmos propostos, salientando detalhes de implementação relevante, e apresentando uma análise assintótica teórica dos custos computacionais incorridos.
+
+No Capítulo 4, são apresentados os resultados experimentais obtidos com a implementação de protótipos dos algoritmos propostos, com o objetivo de demonstrar as vantagens relativas das heurísticas propostas, principalmente quanto ao uso de \minimisers de comprimentos variáveis.
+
+No Capítulo 5 nós apresentamos uma breve discussão acerca dos resultados obtidos, com conclusões gerais e indicações sobre desenvolvimentos futuros.
+
+
+
+
+\chapter{Fundamentação Teórica}
+
+\begin{comment}
+	Este capítulo deve conter uma descrição técnica e precisa dos conceitos e problemas abordadeos e um levantamento bibliográfico crítico e circunstanciado do tema do trabalho, desde os trabalhos seminais até os desenvolvimentos recentes relacionados ao problema de pesquisa abordado. O objetivo do capítulo é demonstrar um conhecimento em largura - da área como um todo - e em profundidade - quanto ao problema específico - em nível de especialista. A narrativa deve ser técnica, precisa e fundamentada. As dificuldades, avanços e problemas em aberto relativas ao problema devem ser colocados de maneira razoavelmente detalhada, fazendo-se uso extenso de referências bibliográficas. Apesar disso, esta revisão da literatura deve "contar uma história" de forma coerente e não ser apenas uma coleção de referências. Deve-se procurar um fio condutor que leve ao problema específico abordado.
+\end{comment}
+
+Breve introdução.
+
+
+\section{Casamento Aproximado de Texto}
+
+Definição formal, distância de edição, notação...
+
+\section{Índices de Texto}
+
+\subsection{Índices completos}
+
+Árvores e vetores de sufixos.
+
+\subsection{Índices parciais}
+
+Índices de kmers.
+
+\section{Minimisers}
+
+\section{Seed\&Extend}
+
+\section{Casamento aproximado por seed\&extend com índices completos}
+
+TAPyR
+
+\section{Casamento aproximado por seed\&extend com índices pariciais de \minimisers}
+
+Minimap
+
+
+
+\chapter{Métodos}
+
+\begin{comment}
+	Este capítulo deve conter uma descrição precisa, com linguagem rigorosa e notação apropriada de "como" o você abordou o problema. Devem ser descritos os detalhes do seu método, com os fundamentos teóricos na forma de definições, proposições e suas provas, os algoritmos implementados, com seus pseudocódigos e complexidades teóricas. Também devem ser descritos aspectos práticos relevantes relativos à implementação da metodologia, quando aplicável. As decisões devem ser justificadas tecnicamente, à luz da literatura,  dos resultados conhecidos e da situação prática em questão.
+\end{comment}
+
+Breve introdução.
+
+\section{Visão geral do método}
+
+Apresentar uma visão geral do método com suas componentes principais (índice, algoritmo de busca). Apresentar um diagrama com as caixinhas da metodologia, similar às figuras 1 e 2 de https://www.cin.ufpe.br/~paguso/courses/if767/2017-2/docs/projeto2.pdf.
+
+\section{Construção do Índice de \minimisers de tamanho variável}
+
+Construção do o auxílio da suffix array da janela.
+Descrição dos algoritmos e complexidade
+
+
+\section{Casamento aproximado por seed\&extend}
+
+Fingerprints, heurística de combinação das seeds,... descrição dos algoritmos e complexidade.
+
+
+
+\chapter{Resultados}
+
+\begin{comment}
+	Este capítulo deve conter uma discussão detalhada sobre os resultados obtidos. Os experimentos devem ser descritos em detalhe, incluindo os objetivos ou hipóteses testadas, os dados e as métricas. Os resultados devem ser apresentados de maneira sistemática, com o auxílio de tabelas, diagramas, gráficos, etc., e analisados de maneira rigorosa com auxílio das técnicas estatísticas, conforme apropriado. Mais uma vez, o objetivo do capítulo é "contar a história" dos resultados obtidos. Assim, deve-se tomar cuidado de escolher os experimentos que suportam as conclusões alcançadas e apresentá-los de forma a facilitar a interpretação. A tabulação de dados brutos volumosos deve ser evitada em favor de apresentações mais sintéticas. Se estritamente necessário, os resultados completos podem ser disponibilizados nos apêndices ou como material suplementar. Respeitando o método científico, os resultados devem ser descritos em suficiente detalhe a ponto de serem reproduzidos ou auditados.
+\end{comment}
+
+
+Breve introdução.
+
+\section{Implementação}
+
+Comentar como foi feita a implementação do protótipo em particular
+\begin{itemize}
+\item  linguagem de programação
+\item  bibliotecas e estruturas de dados principais que afetam o desempenho dos algoritmos
+\item limitações conhecidas
+\end{itemize}
+
+Fornecer um apontador para onde o código pode ser obtido.
+
+
+\section{Ambiente experimental}
+
+Detalhar o ambiente experimental (máquina) e dados utilizados nos experimentos. Fornecer apontadores para que possam ser recuperados. 
+
+\section{Análise de sensibilidade e especificidade de \minimisers de diferentes comprimentos}
+
+Apresentar os resultados de sensibilidade/especificidade para os diferentes tamanhos de \minimisers de forma a motivar e justificar a flexibilização para  \minimisers de tamanho variável.
+
+
+\section{Análise do casamento de padrões}
+
+Apresentar os resultados do casamento de padrões com \minimisers de tamanho fixo comparado com a versão que combina os \minimisers de tamanho variado.
+
+
+Nessas duas seções, o rito é o seguinte:
+
+\begin{enumerate}
+\item Explicar o experimento, incluindo a entrada (dados) e o que se pretendia medir.
+\item Apresentar os dados dos resultados experimento: gráficos, tabelas, etc.
+\item Discutir brevemente os resultados do experimento, explicando o por quê desses resultados quando apropriado. Os resultados confirmam as previsões teóricas? Por que?
+\end{enumerate}
+
+
+\chapter{Conclusões}
+
+\begin{comment}
+Este último capítulo deve conter uma discussão final do trabalho, eventualmente precedido por uma breve recapitulação dos principais pontos dos capítulos anteriores. O capítulo deve enfatizar as contribuições alcançadas pelo trabalho e uma análise crítica das suas limitações, apontando direções para desenvolvimentos futuros.
+\end{comment}
+
+Roteiro:
+
+\begin{enumerate}
+\item Recapitulação do que foi feito
+\item Resumo dos resultados obtidos com análise crítica. De forma geral, os resultados esperados foram atingidos? 
+\item Limitações. O que não correu tão bem? Por que?
+\item Trabalhos futuros. O que mais poderia ser feito? Uma óbvia é que a implementação é um protótipo implementado com o objetivo de verificar a viabilidade do método, sendo necessária uma implementação mais eficiente pra análise do desempenho num cenário real.
+\end{enumerate}
+
+Terminar com uma nota positiva.
+
+
+
+
+%%
+%% Parte pós-textual
+%%
+\backmatter
+
+% Apêndices
+% Comente se não houver apêndices
+\appendix
+
+% É aconselhável criar cada apêndice em um arquivo à parte, digamos
+% "apendice1.tex", "apendice.tex", ... "apendiceM.tex" e depois
+% incluí-los com:
+% \include{apendice1}
+% \include{apendice2}
+% ...
+% \include{apendiceM}
+
+
+% Bibliografia
+% É aconselhável utilizar o BibTeX a partir de um arquivo, digamos "biblio.bib".
+% Para ajuda na criação do arquivo .bib e utilização do BibTeX, recorra ao
+% BibTeXpress em www.cin.ufpe.br/~paguso/bibtexpress
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{monografia}
+
+% Cólofon
+% Inclui uma pequena nota com referência à UFPEThesis
+% Comente para omitir
+\colophon
+
+%% Fim do documento
+\end{document}
