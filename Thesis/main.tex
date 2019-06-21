@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage{amsmath}
-
+\usepackage{float}
 \usepackage{algpseudocode,algorithm}
 
 % Declaracoes em Português
@@ -27,7 +27,7 @@
 
 \begin{document}
 
-\title{Use of variable window and minimizer sizes on inexact pattern matching}
+\title{Uso de tamanhos variáveis de minimizers na busca inexata em padrões}
 \author{Arthur Latache}
 
 \maketitle
@@ -52,24 +52,79 @@ Atualmente, na leitura do DNA nos precisamos de heurísticas, ja que o matching 
 \subsubsection{Comparaçōes}
 \paragraph{}{Nos dizemos que o menor entre dois sufixos é o menor lexicograficamente. Fazer essa comparação do jeito naive seria \(O(N)\), então usamos array de sufixos para otimizar esse processo. Contruimos um array de sufixos da string inicial e pegamos o inverso do array de sufixos: \(invSuf(pos) = y | suf\_array[y] = pos\), sendo \(suf\_array\) o array de sufixos. A construção do array de sufixos so ocorre uma vez e pode ser feita em \(O(N)\) sendo \(N\) o tamanho da sequência base. Com isso conseguimos fazer \(invSuf\) ser possivel em \(O(1)\).} 
 \subsubsection{Preprocessamento da obtenção dos minimizers}
-% \begin{algorithm}
-%   \caption{Valor Absoluto}
-%   \begin{algorithmic}[1]
-%   \Function{Absoluto}{x}
-%     \If {$x < 0$}
-%       \State \Return $-x$
-%     \Else
-%       \State \Return $x$
-%     \EndIf
-%   \EndFunction
-%   \end{algorithmic}
-%   \end{algorithm}
-\section{Developments}
-Write your subsection text here.
-
-\section{Results}
-Write your subsection text here.
-
-\section{Conclusion}
+\paragraph{}{Usamos o algoritmo 1 para criar a QueryBase em \(O(N * log(N)\), que é usado para fazer as queries do minimizer em \(O(Log(N))\). Criamos uma Sparse Table com as posições iniciais dos menores sufixos de cada janela.}
+\begin{algorithm}[H]
+  \caption{Criar a QueryBase}
+  \begin{algorithmic}[1]
+    \Function{CreateMinimizerQueryBase}{invSuf, len}
+      \State $minimizer\_positions := int[log_2(len)][len]$
+      \For {$i$}{$0$}{$len - 1$}
+        \State $minimizer\_positions[0][i] = i$
+      \EndFor
+      \For {$j$}{$1$}{$log_2(len)$}
+        \For {$i$}{$0$}{$len - 2^j$}
+          \State  $i1 := minimizer\_positions[j - 1][i]$
+          \State  $i2 := minimizer\_positions[j - 1][i + 2^j]$
+          \If {$invSuf(i1) > invSuf(i2)$}
+            \State $minimizer\_positions[j - 1][i] = i2$
+          \Else
+            \State $minimizer\_positions[j - 1][i] = i1$
+          \EndIf
+        \EndFor
+      \EndFor
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm} 
+\subsubsection{Obtenção dos minimizers a partir da QueryBase}
+\paragraph{}{Seguindo a premissa em \(2.3\), podemos achar a posição do menor sufixo dentro da janela \((initial\_position, initial\_position + window\_size - 1)\). Com isso, conseguimos encontrar o minimizer em \(O(1)\) a partir dessa posição.}
+\begin{algorithm}[H]
+  \caption{Obter a posição do minimizer numa janela}
+  \begin{algorithmic}[1]
+    \Function{GetMinimizerStartPos}{minimizer\_positions, initial\_pos, window\_size, minimizer\_size, invSuf}
+      \State $lg := log_2(window\_size)$
+      \State $i1 := minimizer\_positions[lg][initial\_pos]$
+      \State $i2\_pos := initial\_pos + window\_size - minimizer\_size +1 - 2^{lg}$
+      \State $i2 := minimizer\_positions[lg][i2\_pos]$
+      \If {$invSuf(i1) < invSuf(i2)$}
+        \State \Return $i1$
+      \Else
+        \State \Return $i2$
+      \EndIf
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm} 
+\subsection{Indexação}
+\paragraph{}{Para fazer a busca criamos um indice que usa como chave o minimizer, e contem todas as posições da sequência base onde ele ocorre. Quando usamos o tamanho do minimizer variável, salvamos isso para todos os tamanhos de minimizers que irão ser usados. Nessa pesquisa os tamanhos que utilizamos foram \([16, 32, 64, 128]\). O indice usa um tamanho de janela fixo, nesse caso usamos 200 para fazer os testes.}
+\begin{algorithm}[H]
+  \caption{Obter a posição do minimizer numa janela}
+  \begin{algorithmic}[1]
+    \Function{CreateIndex}{minimizer\_positions, len, window\_size, minimizer\_sizes, invSuf}
+      \State $index := \{\}$
+      \For {$j$}{$0$}{$|minimizer\_sizes| - 1$}
+        \State $minimizer\_size := minimizer\_sizes[j]$
+        \For {$i$}{$0$}{$len - 1$}
+          \State $GMSP := GetMinimizerStartPos$
+          \State $msizes := minimizer\_sizes$
+          \State $msize := minimizer\_size$
+          \State $min\_pos := GMSP(msizes, i, window\_size, msize, invSuf)$
+          \State $minimizer := Substr(min\_pos, min\_pos + msize)$
+          \If {$minimizer not in index$}
+            \State $index[minimizer] := {}$
+          \EndIf
+          \State $index[minimizer] = index[minimizer] \cup \{min\_pos\}$
+        \EndFor
+      \EndFor
+      \State \Return index
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm} 
+\subsection{Criando fingerprint de reads}
+\paragraph{}{Criamos uma fingerprint(MiniMap) de cada read, sumarizando os minimizers e onde eles ocorrem. Uma fingerprint é um conjunto de tuplas compostas por onde a read devia ter ocorrido na sequência base, a posição do minimizer e o tamanho do minimizer, para cada posição da janela.  }
+\subsubsection{Fingerprint com minimizer de tamanho fixo}
+\subsubsection{Fingerprint com minimizer de tamanho variável}
+\subsection{Posicionamento das reads}
+\section{Resultados}
+\paragraph{}{Para avaliar se esse resultado melhora as buscas, de}
+\section{Discussão}
 Write your conclusion here.
 \end{document}

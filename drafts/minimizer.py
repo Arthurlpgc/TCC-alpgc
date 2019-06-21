@@ -56,7 +56,7 @@ srr = Sarray(pattern, True)
 mmn = minimizer(pattern, lambda x, y: comp2(x,y,srr.rank))
 
 w = 200
-Ks = [32,64,128]
+Ks = [16,32,64,128]
 
 def get_index(w, Ks, patt, mmn):
   indx = {}
@@ -76,9 +76,9 @@ indx = get_index(w, Ks, pattern, mmn)
 import random
 runs = 10000 // (100 ** test_run)
 stats = {}
-prob_del = 0.015
-prob_ins = 0.005
-prob_mut = 0.005
+prob_del = 0.01
+prob_ins = 0.01
+prob_mut = 0.01
 def mutate(patt, prob_del, prob_ins, prob_mut):
   i = 0
   ret = ''
@@ -95,9 +95,9 @@ def mutate(patt, prob_del, prob_ins, prob_mut):
       ret += patt[i]
       i += 1
   return ret
-cnt = { -1: {'FP':0, 'TP':0, 'FN':0, 'FPS':0, 'TPS':0 } }
+cnt = { -1: {'SZ':0, 'FNDSZE':0, 'FND':0, 'MIS':0, 'NOT': 0} }
 for k in Ks:
-  cnt[k] = {'FP':0, 'TP':0, 'FN':0, 'FPS':0, 'TPS':0 }
+  cnt[k] = {'SZ':0, 'FNDSZE':0, 'FND':0, 'MIS':0, 'NOT': 0}
 lgg = logger(runs / 100)
 
 # patts = open('files/m130928_232712_42213_c100518541910000001823079209281310_s1_p0.1.subreads.fastq', 'r').read()
@@ -139,8 +139,8 @@ def get_overlap(finger_print, cluster_threshold = 10):
   overlap = process_overlap(overlap)
   if overlap['size'] > best_overlap['size']:
     best_overlap = overlap
-  print(best_overlap)
   return best_overlap
+  
 patt_size = 1000
 while runs > 0:
   runs -= 1
@@ -162,7 +162,17 @@ while runs > 0:
         for mnm2 in indx[mnm]:
           finger_print.append((mnm2 - mnm_pos, mnm2, k))
           assert(mnm == pattern[mnm2:(mnm2+len(mnm))])
-    get_overlap(finger_print)
+    overlap = get_overlap(finger_print)
+    cnt[k]['SZ'] += overlap['size']
+    if overlap['size'] == 0:
+      cnt[k]['NOT'] += 1
+    else:
+      if abs(overlap['pos'] - stt) < 10:
+        cnt[k]['FND'] += 1
+        cnt[k]['FNDSZE'] += overlap['size']
+      else:
+        cnt[k]['MIS'] += 1
+
   finger_print = []
   for stt2 in range(0, len(sub_patt) - w):
     ind = len(Ks) - 1
@@ -176,8 +186,17 @@ while runs > 0:
           finger_print.append((mnm2 - mnm_pos, mnm2, k))
           assert(mnm == pattern[mnm2:(mnm2+len(mnm))])
         found = True
-      ind -= 1
-  get_overlap(finger_print)
+      ind -= 1  
+  k=-1  
+  overlap = get_overlap(finger_print)
+  cnt[k]['SZ'] += overlap['size']
+  if overlap['size'] == 0:
+    cnt[k]['NOT'] += 1
+  else:
+    if abs(overlap['pos'] - stt) < 10:
+      cnt[k]['FND'] += 1
+    else:
+      cnt[k]['MIS'] += 1
   
 
 print(cnt)
