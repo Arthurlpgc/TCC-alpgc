@@ -11,7 +11,7 @@
 %%%    Date                = "Jul 2018",
 %%%    Filename            = "ufpethesis.cls",
 %%%    Address             = "Universidade Federal de Pernambuco
-%%%                           Centro de Informática",
+%%%                           Centro de InformÃ¡tica",
 %%%    Telephone           = "+55 81 2126-8430",
 %%%    Email               = "paguso@cin.ufpe.br",
 %%%    Keywords            = "LaTeX, Thesis, Dissertation",
@@ -150,23 +150,23 @@ grau de \@degree\ em \@majorfield.}
 
 % Portuguese
 \if\@language0
-  \gdef\@notdefined{NÃO DEFINIDO}
+  \gdef\@notdefined{NÃO DEFINIDO}
   \gdef\acknowledgementsname{Agradecimentos}
   \gdef\@axiomname{Axioma}
   \gdef\@conjecturename{Conjectura}
-  \gdef\@defname{Definição}
+  \gdef\@defname{DefiniÃ§Ã£o}
   \gdef\@lemmaname{Lema}
   \gdef\@theoname{Teorema}
-  \gdef\@propname{Proposição}
-  \gdef\@corname{Corolário}
+  \gdef\@propname{ProposiÃ§Ã£o}
+  \gdef\@corname{CorolÃ¡rio}
   \gdef\@proofname{Prova}
   \gdef\@figurename{Figura}
   \gdef\@tablename{Tabela}
-  \gdef\@equationame{equação}
-  \gdef\@chaptername{Capítulo}
-  \gdef\@sectionname{Seção}
-  \gdef\@appendixname{Apêndice}
-  \gdef\@pagename{página}
+  \gdef\@equationame{equaÃ§Ã£o}
+  \gdef\@chaptername{CapÃ­tulo}
+  \gdef\@sectionname{SeÃ§Ã£o}
+  \gdef\@appendixname{ApÃªndice}
+  \gdef\@pagename{pÃ¡gina}
   \gdef\@colophontext{%
   \urlstyle{rm}%
   Este volume foi tipografado em \LaTeX\ na classe \textsf{UFPEThesis}
@@ -717,7 +717,7 @@ grau de \@degree\ em \@majorfield.}
 	{0pt}% Heading indent amount
 	{\bfseries}{.}% Heading font and punctuation after it
 	{1ex plus 0pt minus .2ex}% Space after heading 
-	{}% Head spec (empty = same as plain style
+	{}% Head spec (empty = same as ÂplainÂ style
 \theoremstyle{definition}
 \newtheorem{Def}{\@defname}[chapter]
 \theoremstyle{theo}
@@ -1198,7 +1198,7 @@ grau de \@degree\ em \@majorfield.}
 	{0pt}% Heading indent amount
 	{\bfseries}{.}% Heading font and punctuation after it
 	{1ex plus 0pt minus .2ex}% Space after heading 
-	{}% Head spec (empty = same as plain style
+	{}% Head spec (empty = same as ÂplainÂ style
 \theoremstyle{definition}
 \newtheorem{Def}{\@defname}[chapter]
 \theoremstyle{theo}
