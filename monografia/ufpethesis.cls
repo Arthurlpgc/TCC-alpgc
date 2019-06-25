@@ -150,23 +150,23 @@ grau de \@degree\ em \@majorfield.}
 
 % Portuguese
 \if\@language0
-  \gdef\@notdefined{NÃO DEFINIDO}
+  \gdef\@notdefined{NÃO DEFINIDO}
   \gdef\acknowledgementsname{Agradecimentos}
   \gdef\@axiomname{Axioma}
   \gdef\@conjecturename{Conjectura}
   \gdef\@defname{DefiniÃ§Ã£o}
   \gdef\@lemmaname{Lema}
   \gdef\@theoname{Teorema}
-  \gdef\@propname{ProposiÃ§Ã£o}
-  \gdef\@corname{CorolÃ¡rio}
+  \gdef\@propname{Proposição}
+  \gdef\@corname{Corolário}
   \gdef\@proofname{Prova}
   \gdef\@figurename{Figura}
   \gdef\@tablename{Tabela}
-  \gdef\@equationame{equaÃ§Ã£o}
-  \gdef\@chaptername{CapÃ­tulo}
-  \gdef\@sectionname{SeÃ§Ã£o}
-  \gdef\@appendixname{ApÃªndice}
-  \gdef\@pagename{pÃ¡gina}
+  \gdef\@equationame{equação}
+  \gdef\@chaptername{Capítulo}
+  \gdef\@sectionname{Sessão}
+  \gdef\@appendixname{Apêndice}
+  \gdef\@pagename{página}
   \gdef\@colophontext{%
   \urlstyle{rm}%
   Este volume foi tipografado em \LaTeX\ na classe \textsf{UFPEThesis}
